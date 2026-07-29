@@ -1796,7 +1796,7 @@ export default function AdminDashboard() {
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                     <button 
                       className={styles.btnEdit}
-                      onClick={() => handleOpenEditEvent(selectedEvent)}
+                      onClick={() => { setIsMobileDetailOpen(false); handleOpenEditEvent(selectedEvent); }}
                     >
                       Edit
                     </button>
@@ -1814,7 +1814,7 @@ export default function AdminDashboard() {
                     <h4 className={styles.eventsSectionTitle}>Registered Users ({eventDetails?.registeredUsers?.length || 0})</h4>
                     <button
                       className={styles.btnEdit}
-                      onClick={() => setIsAddUsersToEventOpen(true)}
+                      onClick={() => { setIsMobileDetailOpen(false); setIsAddUsersToEventOpen(true); }}
                     >
                       + Add Users
                     </button>
