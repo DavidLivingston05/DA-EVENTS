@@ -381,6 +381,24 @@ export default function UserDashboard() {
           </>
         )}
       </main>
+
+      {/* Fixed Mobile Bottom Navigation Bar */}
+      <nav className={styles.bottomNav}>
+        <button
+          className={`${styles.bottomNavItem} ${activeTab === 'all' ? styles.bottomNavItemActive : ''}`}
+          onClick={() => setActiveTab('all')}
+        >
+          <span className={styles.bottomNavIcon}>🏠</span>
+          <span>Events</span>
+        </button>
+        <button
+          className={`${styles.bottomNavItem} ${activeTab === 'registered' ? styles.bottomNavItemActive : ''}`}
+          onClick={() => setActiveTab('registered')}
+        >
+          <span className={styles.bottomNavIcon}>🎟️</span>
+          <span>My Passes ({upcomingRegisteredEvents.length})</span>
+        </button>
+      </nav>
     </div>
   );
 }
