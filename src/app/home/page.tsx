@@ -165,7 +165,7 @@ export default function UserDashboard() {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                  My Registered Events ({registeredEvents.length})
+                  My Registered Events ({upcomingRegisteredEvents.length})
                 </button>
 
                 <button 
@@ -252,16 +252,16 @@ export default function UserDashboard() {
                 <p className={styles.registeredSub}>Your confirmed event registrations and entry passes.</p>
               </div>
               <span className={styles.registeredCountBadge}>
-                {registeredEvents.length} Confirmed Pass{registeredEvents.length !== 1 ? 'es' : ''}
+                {upcomingRegisteredEvents.length} Confirmed Pass{upcomingRegisteredEvents.length !== 1 ? 'es' : ''}
               </span>
             </div>
 
-            {registeredEvents.length === 0 ? (
+            {upcomingRegisteredEvents.length === 0 ? (
               <div className={`reveal ${styles.emptyState}`}>
                 <div className={styles.emptyIcon}>🎫</div>
                 <h2 className={styles.emptyTitle}>No Registered Events</h2>
                 <p className={styles.emptyDesc}>
-                  You haven't registered for any events yet. Click 'All Events' to browse upcoming events!
+                  You haven't registered for any upcoming events yet. Click 'All Events' to browse upcoming events!
                 </p>
                 <button
                   className={styles.reminderBtn}
@@ -273,7 +273,7 @@ export default function UserDashboard() {
               </div>
             ) : (
               <div className={styles.ticketList}>
-                {registeredEvents.map((event, index) => {
+                {upcomingRegisteredEvents.map((event, index) => {
                   const delayClass = `delay-${Math.min((index % 6) + 1, 6)}`;
                   return (
                     <div
