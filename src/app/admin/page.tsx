@@ -37,7 +37,8 @@ export default function AdminDashboard() {
     const t = new Date();
     return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
   });
-  const [newEventTime, setNewEventTime] = useState('');
+  const [newEventHour, setNewEventHour] = useState('06');
+  const [newEventMinute, setNewEventMinute] = useState('30');
   const [newEventAmPm, setNewEventAmPm] = useState<'AM' | 'PM'>('AM');
   const [newEventLocation, setNewEventLocation] = useState('');
   const [newEventGmapLink, setNewEventGmapLink] = useState('');
@@ -49,7 +50,8 @@ export default function AdminDashboard() {
   const [editEventId, setEditEventId] = useState('');
   const [editEventName, setEditEventName] = useState('');
   const [editEventDate, setEditEventDate] = useState('');
-  const [editEventTime, setEditEventTime] = useState('');
+  const [editEventHour, setEditEventHour] = useState('06');
+  const [editEventMinute, setEditEventMinute] = useState('30');
   const [editEventAmPm, setEditEventAmPm] = useState<'AM' | 'PM'>('AM');
   const [editEventLocation, setEditEventLocation] = useState('');
   const [editEventGmapLink, setEditEventGmapLink] = useState('');
@@ -521,7 +523,7 @@ export default function AdminDashboard() {
     setIsEventSubmitting(true);
 
     try {
-      const formattedTime = formatTimeWithAmPm(newEventTime, newEventAmPm);
+      const formattedTime = `${newEventHour}:${newEventMinute} ${newEventAmPm}`;
       const res = await fetch('/api/admin/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -544,9 +546,10 @@ export default function AdminDashboard() {
       setEvents([data.event, ...events]); 
       setIsEventModalOpen(false);
       setNewEventName('');
-      // Reset to today after submit
       setNewEventDate(todayStr);
-      setNewEventTime('');
+      setNewEventHour('06');
+      setNewEventMinute('30');
+      setNewEventAmPm('AM');
       setNewEventLocation('');
       setNewEventGmapLink('');
       setNewEventCost('');
@@ -577,8 +580,32 @@ export default function AdminDashboard() {
     setEditEventDate(event.date);
 
     const rawTime = event.time || '';
-    setEditEventAmPm(/PM/i.test(rawTime) ? 'PM' : 'AM');
-    setEditEventTime(rawTime.replace(/\s*(AM|PM|am|pm)/i, '').trim());
+    let h = '06';
+    let m = '00';
+    let period: 'AM' | 'PM' = 'AM';
+
+    if (/PM/i.test(rawTime)) period = 'PM';
+    else if (/AM/i.test(rawTime)) period = 'AM';
+
+    const clean = rawTime.replace(/\s*(AM|PM|am|pm)/i, '').trim();
+    const parts = clean.split(':');
+    if (parts.length >= 2) {
+      let numH = parseInt(parts[0], 10);
+      const numM = parseInt(parts[1], 10);
+      if (!isNaN(numH)) {
+        if (!/AM|PM/i.test(rawTime) && numH >= 12) period = 'PM';
+        numH = numH % 12;
+        if (numH === 0) numH = 12;
+        h = String(numH).padStart(2, '0');
+      }
+      if (!isNaN(numM)) {
+        m = String(numM).padStart(2, '0');
+      }
+    }
+
+    setEditEventHour(h);
+    setEditEventMinute(m);
+    setEditEventAmPm(period);
 
     setEditEventLocation(event.locationAddress);
     setEditEventGmapLink(event.gmapLink || '');
@@ -592,7 +619,7 @@ export default function AdminDashboard() {
     setIsEventSubmitting(true);
 
     try {
-      const formattedTime = formatTimeWithAmPm(editEventTime, editEventAmPm);
+      const formattedTime = `${editEventHour}:${editEventMinute} ${editEventAmPm}`;
       const res = await fetch(`/api/admin/events/${editEventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1271,33 +1298,71 @@ export default function AdminDashboard() {
                           required 
                         />
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', flex: 1.2 }}>
-                        <div className={styles.formGroup} style={{ flex: 2 }}>
-                          <label>Time</label>
-                          <input 
-                            type="text" 
-                            value={newEventTime} 
-                            onChange={e => setNewEventTime(e.target.value)} 
-                            required 
-                            placeholder="e.g. 06:30 or 10:00"
-                          />
-                        </div>
-                        <div className={styles.formGroup} style={{ flex: 1 }}>
-                          <label>AM / PM</label>
-                          <select 
-                            value={newEventAmPm} 
-                            onChange={e => setNewEventAmPm(e.target.value as 'AM' | 'PM')}
+                      <div className={styles.formGroup} style={{ flex: 1.3 }}>
+                        <label>Time</label>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          <select
+                            value={newEventHour}
+                            onChange={e => setNewEventHour(e.target.value)}
                             style={{
-                              background: '#000',
-                              border: '1px solid #333',
-                              padding: '0.8rem',
+                              flex: 1,
+                              background: '#0a0a0d',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
                               borderRadius: '6px',
+                              padding: '0.8rem 0.4rem',
                               color: '#fff',
                               fontWeight: 600,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              textAlign: 'center',
                             }}
                           >
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
+                            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
+                              <option key={h} value={h} style={{ background: '#141418', color: '#fff' }}>{h}</option>
+                            ))}
+                          </select>
+
+                          <span style={{ fontWeight: 700, color: '#888', fontSize: '1.1rem' }}>:</span>
+
+                          <select
+                            value={newEventMinute}
+                            onChange={e => setNewEventMinute(e.target.value)}
+                            style={{
+                              flex: 1,
+                              background: '#0a0a0d',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              borderRadius: '6px',
+                              padding: '0.8rem 0.4rem',
+                              color: '#fff',
+                              fontWeight: 600,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                              <option key={m} value={m} style={{ background: '#141418', color: '#fff' }}>{m}</option>
+                            ))}
+                          </select>
+
+                          <select
+                            value={newEventAmPm}
+                            onChange={e => setNewEventAmPm(e.target.value as 'AM' | 'PM')}
+                            style={{
+                              flex: 1.1,
+                              background: 'var(--crimson)',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '0.8rem 0.4rem',
+                              color: '#fff',
+                              fontWeight: 700,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                            }}
+                          >
+                            <option value="AM" style={{ background: '#141418', color: '#fff' }}>AM</option>
+                            <option value="PM" style={{ background: '#141418', color: '#fff' }}>PM</option>
                           </select>
                         </div>
                       </div>
@@ -1375,33 +1440,71 @@ export default function AdminDashboard() {
                           required 
                         />
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', flex: 1.2 }}>
-                        <div className={styles.formGroup} style={{ flex: 2 }}>
-                          <label>Time</label>
-                          <input 
-                            type="text" 
-                            value={editEventTime} 
-                            onChange={e => setEditEventTime(e.target.value)} 
-                            required 
-                            placeholder="e.g. 06:30 or 10:00"
-                          />
-                        </div>
-                        <div className={styles.formGroup} style={{ flex: 1 }}>
-                          <label>AM / PM</label>
-                          <select 
-                            value={editEventAmPm} 
-                            onChange={e => setEditEventAmPm(e.target.value as 'AM' | 'PM')}
+                      <div className={styles.formGroup} style={{ flex: 1.3 }}>
+                        <label>Time</label>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          <select
+                            value={editEventHour}
+                            onChange={e => setEditEventHour(e.target.value)}
                             style={{
-                              background: '#000',
-                              border: '1px solid #333',
-                              padding: '0.8rem',
+                              flex: 1,
+                              background: '#0a0a0d',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
                               borderRadius: '6px',
+                              padding: '0.8rem 0.4rem',
                               color: '#fff',
                               fontWeight: 600,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              textAlign: 'center',
                             }}
                           >
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
+                            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
+                              <option key={h} value={h} style={{ background: '#141418', color: '#fff' }}>{h}</option>
+                            ))}
+                          </select>
+
+                          <span style={{ fontWeight: 700, color: '#888', fontSize: '1.1rem' }}>:</span>
+
+                          <select
+                            value={editEventMinute}
+                            onChange={e => setEditEventMinute(e.target.value)}
+                            style={{
+                              flex: 1,
+                              background: '#0a0a0d',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              borderRadius: '6px',
+                              padding: '0.8rem 0.4rem',
+                              color: '#fff',
+                              fontWeight: 600,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                              <option key={m} value={m} style={{ background: '#141418', color: '#fff' }}>{m}</option>
+                            ))}
+                          </select>
+
+                          <select
+                            value={editEventAmPm}
+                            onChange={e => setEditEventAmPm(e.target.value as 'AM' | 'PM')}
+                            style={{
+                              flex: 1.1,
+                              background: 'var(--crimson)',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '0.8rem 0.4rem',
+                              color: '#fff',
+                              fontWeight: 700,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                            }}
+                          >
+                            <option value="AM" style={{ background: '#141418', color: '#fff' }}>AM</option>
+                            <option value="PM" style={{ background: '#141418', color: '#fff' }}>PM</option>
                           </select>
                         </div>
                       </div>
