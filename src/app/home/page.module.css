@@ -323,30 +323,44 @@
 }
 
 .dateCircle {
-  width: 120px;
-  height: 120px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(220, 20, 60, 0.2) 0%, rgba(220, 20, 60, 0.05) 100%);
-  border: 2px solid rgba(220, 20, 60, 0.5);
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.25) 0%, rgba(220, 20, 60, 0.08) 100%);
+  border: 2px solid rgba(220, 20, 60, 0.6);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   color: #dc143c;
-  box-shadow: 0 0 30px rgba(220, 20, 60, 0.2);
+  box-shadow: 0 0 30px rgba(220, 20, 60, 0.25);
+  padding: 8px;
 }
 
 .dateMonth {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .dateDay {
-  font-size: 48px;
+  font-size: 38px;
   font-weight: 800;
   line-height: 1;
+  margin: 1px 0;
+}
+
+.dateTime {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f4f8fb;
+  background: rgba(220, 20, 60, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 2px 8px;
+  margin-top: 3px;
+  white-space: nowrap;
 }
 
 /* Events Grid */

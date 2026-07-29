@@ -271,6 +271,7 @@ export default function UserDashboard() {
                   <div className={styles.dateCircle}>
                     <span className={styles.dateMonth}>{getMonthOnly(featuredEvent.date)}</span>
                     <span className={styles.dateDay}>{getDayOnly(featuredEvent.date)}</span>
+                    <span className={styles.dateTime}>{formatTimeWithAmPm(featuredEvent.time)}</span>
                   </div>
                 </div>
               </section>
