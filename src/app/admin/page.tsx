@@ -1170,104 +1170,115 @@ export default function AdminDashboard() {
               <div className={styles.modalOverlay}>
                 <div className={styles.modalContent}>
                   <h3 className={styles.modalTitle}>Add Users to Event</h3>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem' }}>
-                    <p style={{ color: '#888', fontSize: '0.85rem', margin: 0 }}>
-                      Select users to add to <strong style={{ color: '#fff' }}>{selectedEvent?.eventName}</strong>
-                    </p>
-                    {users.some(user => !eventDetails?.registeredUsers?.some((u: any) => u._id === user._id)) && (
-                      <button
-                        onClick={handleAddAllUsersToEvent}
-                        disabled={isAddingAll}
-                        style={{
-                          background: 'rgba(220, 20, 60, 0.15)',
-                          border: '1px solid var(--crimson)',
-                          color: '#fff',
-                          padding: '0.4rem 0.85rem',
-                          borderRadius: '6px',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          cursor: isAddingAll ? 'not-allowed' : 'pointer',
-                          opacity: isAddingAll ? 0.6 : 1,
-                          whiteSpace: 'nowrap',
-                          transition: 'all 0.2s',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.4rem',
-                        }}
-                      >
-                        {isAddingAll ? (
-                          <>
-                            <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                            Adding All...
-                          </>
-                        ) : (
-                          '✓ Select All'
-                        )}
-                      </button>
-                    )}
-                  </div>
+                  {/* Only show users who are NOT yet registered */}
+                  {(() => {
+                    const unaddedUsers = users.filter(user =>
+                      !eventDetails?.registeredUsers?.some((u: any) => u._id === user._id)
+                    );
 
-                  {users.length === 0 ? (
-                    <div style={{ color: '#666', textAlign: 'center', padding: '2rem 0' }}>No users in database.</div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto' }}>
-                      {users.map(user => {
-                        const alreadyAdded = eventDetails?.registeredUsers?.some(u => u._id === user._id);
-                        return (
-                          <div
-                            key={user._id}
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              padding: '0.9rem 1rem',
-                              background: alreadyAdded ? 'rgba(220,20,60,0.08)' : 'rgba(255,255,255,0.04)',
-                              border: `1px solid ${alreadyAdded ? 'rgba(220,20,60,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                              borderRadius: '8px',
-                            }}
-                          >
-                            <div>
-                              <div style={{ fontWeight: 600 }}>{user.name}</div>
-                              <a 
-                                href={`tel:${user.contactNumber}`} 
-                                style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'none' }}
-                                onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                                onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
-                              >
-                                📞 {user.contactNumber}
-                              </a>
-                            </div>
-                            {alreadyAdded ? (
-                              <span style={{ fontSize: '0.78rem', color: 'var(--crimson)', fontWeight: 600 }}>✓ Added</span>
-                            ) : (
-                              <button
-                                onClick={() => handleRegisterUserToEvent(user._id)}
-                                disabled={addingUserId === user._id}
+                    return (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem' }}>
+                          <p style={{ color: '#888', fontSize: '0.85rem', margin: 0 }}>
+                            Select users to add to <strong style={{ color: '#fff' }}>{selectedEvent?.eventName}</strong>
+                          </p>
+                          {unaddedUsers.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleAddAllUsersToEvent}
+                              disabled={isAddingAll}
+                              style={{
+                                background: 'rgba(220, 20, 60, 0.15)',
+                                border: '1px solid var(--crimson)',
+                                color: '#fff',
+                                padding: '0.4rem 0.85rem',
+                                borderRadius: '6px',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                cursor: isAddingAll ? 'not-allowed' : 'pointer',
+                                opacity: isAddingAll ? 0.6 : 1,
+                                whiteSpace: 'nowrap',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                              }}
+                            >
+                              {isAddingAll ? (
+                                <>
+                                  <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                                  Adding All...
+                                </>
+                              ) : (
+                                '✓ Select All'
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {unaddedUsers.length === 0 ? (
+                          <div style={{ color: '#aaa', textAlign: 'center', padding: '2.5rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎉</div>
+                            <div style={{ fontWeight: 600, color: '#fff' }}>All users are already registered!</div>
+                            <div style={{ fontSize: '0.82rem', color: '#888', marginTop: '4px' }}>Every member in your database is registered for this event.</div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '420px', overflowY: 'auto' }}>
+                            {unaddedUsers.map(user => (
+                              <div
+                                key={user._id}
                                 style={{
-                                  width: '32px', height: '32px',
-                                  borderRadius: '50%',
-                                  background: 'var(--crimson)',
-                                  border: 'none',
-                                  color: '#fff',
-                                  fontSize: '1.3rem',
-                                  cursor: 'pointer',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  transition: 'opacity 0.2s',
-                                  opacity: addingUserId === user._id ? 0.5 : 1,
-                                  flexShrink: 0,
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '0.9rem 1rem',
+                                  background: 'rgba(255,255,255,0.04)',
+                                  border: '1px solid rgba(255,255,255,0.08)',
+                                  borderRadius: '10px',
                                 }}
                               >
-                                +
-                              </button>
-                            )}
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#fff' }}>{user.name}</div>
+                                  <a 
+                                    href={`tel:${user.contactNumber}`} 
+                                    style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'none' }}
+                                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+                                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                                  >
+                                    📞 {user.contactNumber}
+                                  </a>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRegisterUserToEvent(user._id)}
+                                  disabled={addingUserId === user._id}
+                                  style={{
+                                    width: '36px', height: '36px',
+                                    borderRadius: '50%',
+                                    background: 'var(--crimson)',
+                                    border: 'none',
+                                    color: '#fff',
+                                    fontSize: '1.4rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    transition: 'opacity 0.2s, transform 0.1s',
+                                    opacity: addingUserId === user._id ? 0.5 : 1,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                        )}
+                      </>
+                    );
+                  })()}
 
                   <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
-                    <button className={styles.btnSecondary} onClick={() => setIsAddUsersToEventOpen(false)}>Done</button>
+                    <button type="button" className={styles.btnSecondary} onClick={() => setIsAddUsersToEventOpen(false)}>Done</button>
                   </div>
                 </div>
               </div>
