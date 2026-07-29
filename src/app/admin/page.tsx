@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { formatTimeWithAmPm } from '@/lib/formatTime';
+import { formatTimeWithAmPm, isEventUpcoming } from '@/lib/formatTime';
 import styles from './page.module.css';
 
 export default function AdminDashboard() {
@@ -1029,16 +1029,32 @@ export default function AdminDashboard() {
                 {displayedEvents.length === 0 ? (
                   <div className={styles.noUsers}>No events found.</div>
                 ) : (
-                  displayedEvents.map(event => (
-                    <div 
-                      key={event._id} 
-                      className={`${styles.userListItem} ${selectedEvent?._id === event._id ? styles.activeUser : ''}`}
-                      onClick={() => handleSelectEvent(event)}
-                    >
-                      <span className={styles.userName}>{event.eventName}</span>
-                      <span className={styles.userPhone}>{event.date} - {formatTimeWithAmPm(event.time)}</span>
-                    </div>
-                  ))
+                  displayedEvents.map(event => {
+                    const upcoming = isEventUpcoming(event.date);
+                    return (
+                      <div 
+                        key={event._id} 
+                        className={`${styles.userListItem} ${selectedEvent?._id === event._id ? styles.activeUser : ''}`}
+                        onClick={() => handleSelectEvent(event)}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                          <span className={styles.userName}>{event.eventName}</span>
+                          <span style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: upcoming ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)',
+                            color: upcoming ? 'var(--crimson)' : '#888',
+                            border: upcoming ? '1px solid rgba(220,20,60,0.4)' : '1px solid rgba(255,255,255,0.1)'
+                          }}>
+                            {upcoming ? 'UPCOMING' : 'PAST'}
+                          </span>
+                        </div>
+                        <span className={styles.userPhone}>{event.date} - {formatTimeWithAmPm(event.time)}</span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
@@ -1589,16 +1605,32 @@ export default function AdminDashboard() {
                 {events.length === 0 ? (
                   <div className={styles.noUsers}>No events found.</div>
                 ) : (
-                  events.map(event => (
-                    <div 
-                      key={event._id} 
-                      className={`${styles.userListItem} ${attendanceSelectedEvent?._id === event._id ? styles.activeUser : ''}`}
-                      onClick={() => handleSelectAttendanceEvent(event)}
-                    >
-                      <span className={styles.userName}>{event.eventName}</span>
-                      <span className={styles.userPhone}>{event.date} at {formatTimeWithAmPm(event.time)}</span>
-                    </div>
-                  ))
+                  events.map(event => {
+                    const upcoming = isEventUpcoming(event.date);
+                    return (
+                      <div 
+                        key={event._id} 
+                        className={`${styles.userListItem} ${attendanceSelectedEvent?._id === event._id ? styles.activeUser : ''}`}
+                        onClick={() => handleSelectAttendanceEvent(event)}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                          <span className={styles.userName}>{event.eventName}</span>
+                          <span style={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: upcoming ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)',
+                            color: upcoming ? 'var(--crimson)' : '#888',
+                            border: upcoming ? '1px solid rgba(220,20,60,0.4)' : '1px solid rgba(255,255,255,0.1)'
+                          }}>
+                            {upcoming ? 'UPCOMING' : 'PAST'}
+                          </span>
+                        </div>
+                        <span className={styles.userPhone}>{event.date} at {formatTimeWithAmPm(event.time)}</span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 

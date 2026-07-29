@@ -40,3 +40,14 @@ export const formatTimeWithAmPm = (timeStr: string, ampm?: 'AM' | 'PM') => {
 
   return timeStr;
 };
+
+export const getTodayDateString = () => {
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+};
+
+export const isEventUpcoming = (dateStr: string) => {
+  if (!dateStr) return false;
+  const todayStr = getTodayDateString();
+  return dateStr >= todayStr;
+};
