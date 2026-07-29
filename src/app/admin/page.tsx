@@ -109,6 +109,9 @@ export default function AdminDashboard() {
   const [addingUserId, setAddingUserId] = useState<string | null>(null);
   const [isAddingAll, setIsAddingAll] = useState(false);
 
+  // Mobile detail sheet state
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+
   // Fetch users when on Add User tab
   useEffect(() => {
     if (activeTab === 'addUser') {
@@ -162,6 +165,7 @@ export default function AdminDashboard() {
   const handleSelectUser = async (user: any) => {
     setSelectedUser(user);
     setUserDetails(null); // reset while loading
+    setIsMobileDetailOpen(true);
 
     try {
       const res = await fetch(`/api/admin/users/${user._id}`);
@@ -446,6 +450,7 @@ export default function AdminDashboard() {
   const handleSelectEvent = async (event: any) => {
     setSelectedEvent(event);
     setEventDetails(null);
+    setIsMobileDetailOpen(true);
 
     try {
       const res = await fetch(`/api/admin/events/${event._id}`);
@@ -461,6 +466,7 @@ export default function AdminDashboard() {
   const handleSelectAttendanceEvent = async (event: any) => {
     setAttendanceSelectedEvent(event);
     setAttendanceEventDetails(null);
+    setIsMobileDetailOpen(true);
 
     try {
       const res = await fetch(`/api/admin/events/${event._id}`);
@@ -772,7 +778,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Middle Column: User Details */}
-              <div className={styles.userDetailsArea}>
+              <div className={`${styles.userDetailsArea} ${styles.userDetailsAreaDesktop}`}>
                 {!selectedUser ? (
                   <div className={styles.emptyState}>Select a user from the left to view their details.</div>
                 ) : (
@@ -1037,7 +1043,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Middle Column: Event Details */}
-              <div className={styles.userDetailsArea}>
+              <div className={`${styles.userDetailsArea} ${styles.userDetailsAreaDesktop}`}>
                 {!selectedEvent ? (
                   <div className={styles.emptyState}>Select an event from the left to view its details.</div>
                 ) : (
@@ -1597,7 +1603,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Right Column: Attendance Details */}
-              <div className={styles.userDetailsArea}>
+              <div className={`${styles.userDetailsArea} ${styles.userDetailsAreaDesktop}`}>
                 {!attendanceSelectedEvent ? (
                   <div className={styles.emptyState}>Select an event from the left to view attendance.</div>
                 ) : (
@@ -1673,6 +1679,175 @@ export default function AdminDashboard() {
           </div>
         )}
       </main>
+      {/* Fixed Mobile Bottom Navigation Bar */}
+      <nav className={styles.bottomNav}>
+        <button 
+          className={`${styles.bottomNavItem} ${activeTab === 'addUser' ? styles.bottomNavItemActive : ''}`}
+          onClick={() => { setActiveTab('addUser'); setIsMobileDetailOpen(false); }}
+        >
+          <span className={styles.bottomNavIcon}>👥</span>
+          <span>Users</span>
+        </button>
+        <button 
+          className={`${styles.bottomNavItem} ${activeTab === 'createEvent' ? styles.bottomNavItemActive : ''}`}
+          onClick={() => { setActiveTab('createEvent'); setIsMobileDetailOpen(false); }}
+        >
+          <span className={styles.bottomNavIcon}>📅</span>
+          <span>Events</span>
+        </button>
+        <button 
+          className={`${styles.bottomNavItem} ${activeTab === 'attendance' ? styles.bottomNavItemActive : ''}`}
+          onClick={() => { setActiveTab('attendance'); setIsMobileDetailOpen(false); }}
+        >
+          <span className={styles.bottomNavIcon}>📋</span>
+          <span>Attendance</span>
+        </button>
+      </nav>
+
+      {/* Mobile Bottom Sheet Detail Modal */}
+      {isMobileDetailOpen && (
+        <div className={styles.mobileSheetOverlay} onClick={() => setIsMobileDetailOpen(false)}>
+          <div className={styles.mobileSheetContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.mobileSheetHeader}>
+              <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#fff' }}>
+                {activeTab === 'addUser' ? 'User Details' : activeTab === 'createEvent' ? 'Event Details' : 'Attendance Details'}
+              </div>
+              <button className={styles.mobileSheetCloseBtn} onClick={() => setIsMobileDetailOpen(false)}>✕</button>
+            </div>
+
+            {/* Mobile Content for Add User Tab */}
+            {activeTab === 'addUser' && selectedUser && (
+              <>
+                <div className={styles.detailsHeader}>
+                  <div className={styles.detailsTitleArea}>
+                    <h3 className={styles.detailsTitle}>{selectedUser.name}</h3>
+                    <a href={`tel:${selectedUser.contactNumber}`} className={styles.detailsPhone} style={{ textDecoration: 'none' }}>
+                      📞 {selectedUser.contactNumber}
+                    </a>
+                  </div>
+                  <button 
+                    className={styles.btnDelete}
+                    onClick={() => { handleDeleteUser(selectedUser._id); setIsMobileDetailOpen(false); }}
+                  >
+                    Delete User
+                  </button>
+                </div>
+
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 className={styles.eventsSectionTitle}>Upcoming Events</h4>
+                  {!userDetails ? (
+                    <div className={styles.noEvents}>Loading...</div>
+                  ) : userDetails.upcoming.length === 0 ? (
+                    <div className={styles.noEvents}>No upcoming registrations.</div>
+                  ) : (
+                    userDetails.upcoming.map(ev => (
+                      <div key={ev._id} className={styles.eventCard} style={{ marginBottom: '0.5rem' }}>
+                        <h4 style={{ margin: '0 0 0.25rem' }}>{ev.eventName}</h4>
+                        <p style={{ margin: 0, color: 'var(--crimson)', fontSize: '0.85rem' }}>{ev.date} &bull; {ev.time}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Mobile Content for Event Tab */}
+            {activeTab === 'createEvent' && selectedEvent && (
+              <>
+                <div className={styles.detailsHeader}>
+                  <div className={styles.detailsTitleArea}>
+                    <h3 className={styles.detailsTitle}>{selectedEvent.eventName}</h3>
+                    <div className={styles.detailsPhone}>{selectedEvent.date} | {formatTimeWithAmPm(selectedEvent.time)}</div>
+                    <div style={{color: '#888', marginTop: '0.4rem', fontSize: '0.85rem'}}>Cost: ₹{selectedEvent.travelCost}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <button 
+                      className={styles.btnEdit}
+                      onClick={() => handleOpenEditEvent(selectedEvent)}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      className={styles.btnDelete}
+                      onClick={() => { handleDeleteEvent(selectedEvent._id); setIsMobileDetailOpen(false); }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <h4 className={styles.eventsSectionTitle}>Registered Users ({eventDetails?.registeredUsers?.length || 0})</h4>
+                    <button
+                      className={styles.btnEdit}
+                      onClick={() => setIsAddUsersToEventOpen(true)}
+                    >
+                      + Add Users
+                    </button>
+                  </div>
+                  {!eventDetails ? (
+                    <div className={styles.noEvents}>Loading...</div>
+                  ) : eventDetails.registeredUsers.length === 0 ? (
+                    <div className={styles.noEvents}>No users registered yet.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {eventDetails.registeredUsers.map(user => (
+                        <div key={user._id} style={{ padding: '0.75rem 0.85rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name}</span>
+                          <a href={`tel:${user.contactNumber}`} style={{ color: 'var(--crimson)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem' }}>
+                            📞 {user.contactNumber}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Mobile Content for Attendance Tab */}
+            {activeTab === 'attendance' && attendanceSelectedEvent && (
+              <>
+                <div className={styles.detailsHeader}>
+                  <div className={styles.detailsTitleArea}>
+                    <h3 className={styles.detailsTitle}>{attendanceSelectedEvent.eventName}</h3>
+                    <div className={styles.detailsPhone}>{attendanceSelectedEvent.date} &bull; {formatTimeWithAmPm(attendanceSelectedEvent.time)}</div>
+                  </div>
+                  <button 
+                    className={styles.btnAddUser}
+                    onClick={exportAttendance}
+                    disabled={!attendanceEventDetails?.registeredUsers?.length}
+                    style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    Export Excel
+                  </button>
+                </div>
+
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 className={styles.eventsSectionTitle}>Registered Users</h4>
+                  {!attendanceEventDetails ? (
+                    <div className={styles.noEvents}>Loading...</div>
+                  ) : attendanceEventDetails.registeredUsers.length === 0 ? (
+                    <div className={styles.noEvents}>No users registered yet.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      {attendanceEventDetails.registeredUsers.map((user: any) => (
+                        <div key={user._id} style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.75rem', borderRadius: '10px' }}>
+                          <h4 style={{ margin: '0 0 0.2rem 0', fontSize: '0.95rem' }}>{user.name}</h4>
+                          <a href={`tel:${user.contactNumber}`} style={{ color: 'var(--crimson)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
+                            📞 {user.contactNumber}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

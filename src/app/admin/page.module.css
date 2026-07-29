@@ -675,56 +675,179 @@
   color: #fff;
 }
 
+/* Bottom Navigation Bar (Mobile) */
+.bottomNav {
+  display: none;
+}
+
+/* Mobile Detail Sheet Overlay */
+.mobileSheetOverlay {
+  display: none;
+}
+
+.userDetailsAreaDesktop {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .navbar { 
-    padding: 0.75rem 1rem; 
+    padding: 0.85rem 1.25rem; 
     flex-direction: row; 
-    flex-wrap: wrap; 
     justify-content: space-between; 
-    gap: 0.75rem; 
+    align-items: center;
+    background: rgba(10, 10, 12, 0.95);
   }
+
   .navTabs { 
-    order: 3; 
-    width: 100%; 
-    justify-content: center; 
-    gap: 1rem; 
-    padding-top: 0.5rem; 
-    border-top: 1px solid rgba(255, 255, 255, 0.05); 
+    display: none; /* Replaced by fixed bottom navigation bar on mobile */
   }
-  .tab { 
-    font-size: 0.85rem; 
+
+  .container {
+    padding-bottom: 70px; /* Offset space for fixed bottom navbar */
   }
+
+  .bottomNav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: rgba(12, 12, 16, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 9999;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 0.5rem;
+  }
+
+  .bottomNavItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 11px;
+    font-weight: 500;
+    flex: 1;
+    height: 100%;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .bottomNavItemActive {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .bottomNavItemActive .bottomNavIcon {
+    color: var(--crimson);
+    transform: scale(1.15);
+  }
+
+  .bottomNavIcon {
+    font-size: 18px;
+    transition: transform 0.2s;
+  }
+
   .usersLayout { 
     flex-direction: column; 
-    padding: 1rem; 
-    gap: 1.5rem; 
+    padding: 0.75rem 1rem; 
+    gap: 1rem; 
   }
+
   .usersSidebar, .eventSidebar { 
     width: 100%; 
     flex: none; 
-    max-height: 350px; 
+    max-height: calc(100vh - 180px);
   }
-  .userDetailsArea { 
-    padding: 1.25rem; 
+
+  /* Hide desktop inline detail panel on mobile so user doesn't scroll past empty box */
+  .userDetailsAreaDesktop { 
+    display: none; 
   }
-  .detailsHeader { 
-    flex-direction: column; 
-    align-items: flex-start; 
-    gap: 1rem; 
-  }
+
   .sectionHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
   }
+
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+
   .modalContent { 
     width: 94vw; 
     padding: 1.25rem; 
     max-height: 90vh; 
     overflow-y: auto; 
   }
+
   .eventsGrid { 
     grid-template-columns: 1fr; 
+  }
+
+  /* Mobile Sheet Overlay */
+  .mobileSheetOverlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    align-items: flex-end;
+    animation: fadeIn 0.2s ease forwards;
+  }
+
+  .mobileSheetContent {
+    width: 100%;
+    max-height: 85vh;
+    background: #141418;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 1.5rem 1.25rem 2rem;
+    overflow-y: auto;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .mobileSheetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .mobileSheetCloseBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
 }
