@@ -1103,7 +1103,14 @@ export default function AdminDashboard() {
                               <div key={user._id} style={{ padding: '0.85rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontWeight: 600 }}>{user.name}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                  <span style={{ color: 'var(--crimson)' }}>{user.contactNumber}</span>
+                                  <a 
+                                    href={`tel:${user.contactNumber}`} 
+                                    style={{ color: 'var(--crimson)', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+                                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                                  >
+                                    📞 {user.contactNumber}
+                                  </a>
                                   <button
                                     onClick={() => handleRemoveUserFromEvent(user._id)}
                                     title="Remove from event"
@@ -1198,7 +1205,14 @@ export default function AdminDashboard() {
                           >
                             <div>
                               <div style={{ fontWeight: 600 }}>{user.name}</div>
-                              <div style={{ fontSize: '0.8rem', color: '#888' }}>{user.contactNumber}</div>
+                              <a 
+                                href={`tel:${user.contactNumber}`} 
+                                style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'none' }}
+                                onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                📞 {user.contactNumber}
+                              </a>
                             </div>
                             {alreadyAdded ? (
                               <span style={{ fontSize: '0.78rem', color: 'var(--crimson)', fontWeight: 600 }}>✓ Added</span>
@@ -1630,7 +1644,23 @@ export default function AdminDashboard() {
                                 border: '1px solid rgba(255, 255, 255, 0.05)'
                               }}>
                               <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--foreground)' }}>{user.name}</h4>
-                              <p style={{ margin: 0, color: '#888', fontSize: '0.9rem' }}>{user.contactNumber}</p>
+                              <a 
+                                href={`tel:${user.contactNumber}`}
+                                style={{ 
+                                  color: 'var(--crimson)', 
+                                  fontSize: '0.9rem', 
+                                  textDecoration: 'none', 
+                                  fontWeight: 600,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  marginTop: '2px',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                📞 {user.contactNumber}
+                              </a>
                             </div>
                           ))}
                         </div>
