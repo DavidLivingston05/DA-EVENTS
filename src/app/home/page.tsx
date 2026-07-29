@@ -236,17 +236,88 @@ export default function UserDashboard() {
             <div className={`${styles.skeletonCard} shimmer`}></div>
             <div className={`${styles.skeletonCard} shimmer`}></div>
           </div>
-        ) : displayedEvents.length === 0 ? (
+        ) : activeTab === 'registered' ? (
+          /* Dedicated Registered Events Ticket Pass View */
+          <div>
+            <div className={styles.registeredHeader}>
+              <div>
+                <h2 className={styles.registeredTitle}>
+                  🎟️ My Event Passes
+                </h2>
+                <p className={styles.registeredSub}>Your confirmed event registrations and entry passes.</p>
+              </div>
+              <span className={styles.registeredCountBadge}>
+                {registeredEvents.length} Confirmed Pass{registeredEvents.length !== 1 ? 'es' : ''}
+              </span>
+            </div>
+
+            {registeredEvents.length === 0 ? (
+              <div className={`reveal ${styles.emptyState}`}>
+                <div className={styles.emptyIcon}>🎫</div>
+                <h2 className={styles.emptyTitle}>No Registered Events</h2>
+                <p className={styles.emptyDesc}>
+                  You haven't registered for any events yet. Click 'All Events' to browse upcoming events!
+                </p>
+                <button
+                  className={styles.reminderBtn}
+                  style={{ marginTop: '1.5rem' }}
+                  onClick={() => setActiveTab('all')}
+                >
+                  Browse All Events &rarr;
+                </button>
+              </div>
+            ) : (
+              <div className={styles.ticketList}>
+                {registeredEvents.map((event, index) => {
+                  const delayClass = `delay-${Math.min((index % 6) + 1, 6)}`;
+                  return (
+                    <div
+                      key={event._id}
+                      className={`reveal-3d ${delayClass} ${styles.ticketPass}`}
+                      onClick={() => router.push(`/home/events/${event._id}`)}
+                    >
+                      <div className={styles.ticketLeft}>
+                        <div className={styles.ticketStatus}>
+                          <span>✓</span> CONFIRMED ACCESS PASS
+                        </div>
+                        <h3 className={styles.ticketTitle}>{event.eventName}</h3>
+                        <div className={styles.ticketMetaRow}>
+                          <span className={styles.ticketMetaChip}>
+                            📅 {formatDate(event.date)}
+                          </span>
+                          <span className={styles.ticketMetaChip}>
+                            ⏰ {formatTimeWithAmPm(event.time)}
+                          </span>
+                          <span className={styles.ticketMetaChip}>
+                            📍 {event.locationAddress}
+                          </span>
+                          {event.travelCost && event.travelCost !== '0' && (
+                            <span className={styles.ticketMetaChip}>
+                              🚌 ₹{event.travelCost}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={styles.ticketDivider} />
+
+                      <div className={styles.ticketRight}>
+                        <div className={styles.ticketBadgeIcon}>🎫</div>
+                        <button className={styles.ticketActionBtn}>
+                          View Pass & Venue &rarr;
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : events.length === 0 ? (
           <div className={`reveal ${styles.emptyState}`}>
             <div className={styles.emptyIcon}>📭</div>
-            <h2 className={styles.emptyTitle}>
-              {activeTab === 'registered' ? 'No Registered Events' : 'No Events Yet'}
-            </h2>
-            <p className={styles.emptyDesc}>
-              {activeTab === 'registered'
-                ? "You haven't registered for any events yet. Click 'All Events' to browse and register!"
-                : 'There are no upcoming events at the moment. Please check back later.'}
-            </p>
+            <h2 className={styles.emptyTitle}>No Events Yet</h2>
+            <p className={styles.emptyDesc}>There are no upcoming events at the moment. Please check back later.</p>
           </div>
         ) : (
           <>
@@ -257,9 +328,7 @@ export default function UserDashboard() {
                 onClick={() => router.push(`/home/events/${featuredEvent._id}`)}
               >
                 <div className={styles.featuredLeft}>
-                  <span className={styles.badge}>
-                    {activeTab === 'registered' ? 'REGISTERED' : 'LATEST'}
-                  </span>
+                  <span className={styles.badge}>LATEST</span>
                   <h2 className={styles.featuredTitle}>{featuredEvent.eventName}</h2>
                   <div className={styles.featuredPills}>
                     <span className={styles.pill}>{formatDate(featuredEvent.date)}</span>
