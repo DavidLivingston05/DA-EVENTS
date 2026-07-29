@@ -85,26 +85,19 @@ export default function UserDashboard() {
     }
   };
 
-  // Group events by date logic
+  // Strictly filter only upcoming events (erase past events)
   const upcomingEvents = events.filter(e => isEventUpcoming(e.date));
-  const pastEvents = events.filter(e => !isEventUpcoming(e.date));
-
   const upcomingRegisteredEvents = registeredEvents.filter(e => isEventUpcoming(e.date));
-  const pastRegisteredEvents = registeredEvents.filter(e => !isEventUpcoming(e.date));
 
-  // Determine next registered UPCOMING event for the reminder card (never show past events!)
+  // Determine next registered UPCOMING event for the reminder card
   const upcomingRegisteredEvent = upcomingRegisteredEvents
     .filter(e => e && e.date)
     .sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime())[0] || null;
 
-  // Filter events based on activeTab and eventFilter
-  const targetEvents = activeTab === 'registered' ? registeredEvents : events;
-  const displayedEvents = targetEvents.filter(e => 
-    eventFilter === 'upcoming' ? isEventUpcoming(e.date) : !isEventUpcoming(e.date)
-  );
-
-  const featuredEvent = eventFilter === 'upcoming' ? (displayedEvents[0] || null) : null;
-  const remainingEvents = eventFilter === 'upcoming' ? displayedEvents.slice(1) : displayedEvents;
+  // Displayed events based on activeTab
+  const displayedEvents = activeTab === 'registered' ? upcomingRegisteredEvents : upcomingEvents;
+  const featuredEvent = displayedEvents[0] || null;
+  const remainingEvents = displayedEvents.slice(1);
 
   return (
     <div className={styles.container}>
@@ -119,13 +112,13 @@ export default function UserDashboard() {
             className={`${styles.tab} ${activeTab === 'all' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('all')}
           >
-            All Events ({eventFilter === 'upcoming' ? upcomingEvents.length : pastEvents.length})
+            All Events ({upcomingEvents.length})
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'registered' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('registered')}
           >
-            Registered Events ({eventFilter === 'upcoming' ? upcomingRegisteredEvents.length : pastRegisteredEvents.length})
+            Registered Events ({upcomingRegisteredEvents.length})
           </button>
         </div>
 
@@ -242,44 +235,6 @@ export default function UserDashboard() {
 
       {/* Main Content */}
       <main className={styles.mainContent} style={{ paddingTop: '2rem' }}>
-        {/* Date Filter Segmented Switcher */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(255, 255, 255, 0.04)', padding: '5px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <button
-              onClick={() => setEventFilter('upcoming')}
-              style={{
-                background: eventFilter === 'upcoming' ? 'var(--crimson)' : 'transparent',
-                color: eventFilter === 'upcoming' ? '#fff' : '#86868b',
-                border: 'none',
-                padding: '0.6rem 1.4rem',
-                borderRadius: '10px',
-                fontSize: '0.88rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              📅 Upcoming ({activeTab === 'registered' ? upcomingRegisteredEvents.length : upcomingEvents.length})
-            </button>
-            <button
-              onClick={() => setEventFilter('history')}
-              style={{
-                background: eventFilter === 'history' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                color: eventFilter === 'history' ? '#fff' : '#86868b',
-                border: 'none',
-                padding: '0.6rem 1.4rem',
-                borderRadius: '10px',
-                fontSize: '0.88rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              📜 Past History ({activeTab === 'registered' ? pastRegisteredEvents.length : pastEvents.length})
-            </button>
-          </div>
-        </div>
-
         {isLoading ? (
           <div className={styles.loadingGrid}>
             <div className={`${styles.skeletonCard} shimmer`}></div>

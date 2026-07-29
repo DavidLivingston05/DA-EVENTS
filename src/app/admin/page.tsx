@@ -655,7 +655,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const displayedEvents = selectedCalendarDate ? events.filter(e => e.date === selectedCalendarDate) : events;
+  const activeEvents = events.filter(e => isEventUpcoming(e.date));
+  const displayedEvents = (selectedCalendarDate ? activeEvents.filter(e => e.date === selectedCalendarDate) : activeEvents);
   return (
     <div className={styles.container}>
 
@@ -987,10 +988,10 @@ export default function AdminDashboard() {
                 ) : (
                   <div className={styles.calendarCard} style={{ maxHeight: '420px', overflowY: 'auto', padding: '1rem' }}>
                     {/* TIMELINE VIEW */}
-                    {events.length === 0 ? (
+                    {activeEvents.length === 0 ? (
                       <div style={{ color: '#888', textAlign: 'center', padding: '2rem 0' }}>No upcoming events</div>
                     ) : (
-                      [...events]
+                      [...activeEvents]
                         .sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime())
                         .map(event => {
                           const isSelected = selectedEvent?._id === event._id;
@@ -1602,10 +1603,10 @@ export default function AdminDashboard() {
               <div className={styles.eventSidebar}>
                 <div className={styles.sidebarTitle}>Select Event</div>
                 
-                {events.length === 0 ? (
-                  <div className={styles.noUsers}>No events found.</div>
+                {activeEvents.length === 0 ? (
+                  <div className={styles.noUsers}>No upcoming events found.</div>
                 ) : (
-                  events.map(event => {
+                  activeEvents.map(event => {
                     const upcoming = isEventUpcoming(event.date);
                     return (
                       <div 
