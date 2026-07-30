@@ -45,6 +45,9 @@ export default function UserDashboard() {
               setRegisteredEvents(userData.registeredEvents || []);
             }
           }
+        } else {
+          router.push('/login');
+          return;
         }
       } catch (err) {
         console.error('Failed to fetch data', err);

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { formatTimeWithAmPm, isEventUpcoming } from '@/lib/formatTime';
 import styles from './page.module.css';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'addUser' | 'createEvent' | 'attendance'>('addUser');
 
   // Add User Tab States
@@ -111,6 +113,27 @@ export default function AdminDashboard() {
 
   // Mobile detail sheet state
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+
+  // Admin authentication check on mount
+  useEffect(() => {
+    const checkAdminAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) {
+          router.push('/login?mode=admin');
+          return;
+        }
+        const data = await res.json();
+        if (data.user?.role !== 'admin') {
+          router.push('/login?mode=admin');
+          return;
+        }
+      } catch (err) {
+        router.push('/login?mode=admin');
+      }
+    };
+    checkAdminAuth();
+  }, [router]);
 
   // Fetch users when on Add User tab
   useEffect(() => {

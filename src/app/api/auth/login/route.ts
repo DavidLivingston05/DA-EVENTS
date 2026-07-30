@@ -31,22 +31,39 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Name and contact number are required' }, { status: 400 });
       }
       
-      if (!/^\d{10}$/.test(contactNumber)) {
+      // Normalize contact number: extract digits and take last 10
+      const digitsOnly = String(contactNumber).replace(/\D/g, '');
+      const cleanPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
+
+      if (!/^\d{10}$/.test(cleanPhone)) {
         return NextResponse.json({ error: 'Contact number must be exactly 10 digits' }, { status: 400 });
       }
 
-      let user = await User.findOne({ contactNumber });
+      const trimmedName = name.trim();
+
+      // Find user by normalized phone or raw phone string
+      let user = await User.findOne({ 
+        $or: [
+          { contactNumber: cleanPhone },
+          { contactNumber: String(contactNumber).trim() }
+        ] 
+      });
       
       if (!user) {
-        // User doesn't exist, store them in DB
-        user = await User.create({ name, contactNumber, role: 'user' });
+        // Create new member user
+        user = await User.create({ name: trimmedName, contactNumber: cleanPhone, role: 'user' });
+      } else {
+        // Sync name if member updated their name
+        if (trimmedName && user.name !== trimmedName) {
+          user.name = trimmedName;
+          await user.save();
+        }
       }
-      // If user exists, there is no need to store/update them in DB, just log them in.
       
       userId = user._id.toString();
     }
 
-    // Set an HTTP-only cookie to maintain the session
+    // Set HTTP-only cookie for session
     const cookieStore = await cookies();
     cookieStore.set('auth-token', userId, {
       httpOnly: true,

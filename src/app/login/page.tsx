@@ -21,7 +21,25 @@ export default function LoginPage() {
     if (params.get('mode') === 'admin') {
       setMode('admin');
     }
-  }, []);
+
+    // Auto-redirect if already authenticated
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user?.role === 'admin') {
+            router.push('/admin');
+          } else if (data.user) {
+            router.push('/home');
+          }
+        }
+      } catch (err) {
+        // Not authenticated, stay on login page
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
