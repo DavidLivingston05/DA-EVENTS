@@ -40,24 +40,25 @@ export async function POST(request: Request) {
       }
 
       const trimmedName = name.trim();
+      const escapedName = trimmedName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const nameRegex = new RegExp(`^${escapedName}$`, 'i');
 
-      // Find user by normalized phone or raw phone string
+      // Find user by normalized phone AND name (allows multiple family members on 1 phone number)
       let user = await User.findOne({ 
-        $or: [
-          { contactNumber: cleanPhone },
-          { contactNumber: String(contactNumber).trim() }
-        ] 
+        $and: [
+          {
+            $or: [
+              { contactNumber: cleanPhone },
+              { contactNumber: String(contactNumber).trim() }
+            ]
+          },
+          { name: nameRegex }
+        ]
       });
       
       if (!user) {
-        // Create new member user
+        // Create a new distinct member profile for this name + contact number
         user = await User.create({ name: trimmedName, contactNumber: cleanPhone, role: 'user' });
-      } else {
-        // Sync name if member updated their name
-        if (trimmedName && user.name !== trimmedName) {
-          user.name = trimmedName;
-          await user.save();
-        }
       }
       
       userId = user._id.toString();

@@ -32,10 +32,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Contact number must be exactly 10 digits' }, { status: 400 });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ contactNumber });
+    const trimmedName = name.trim();
+    const escapedName = trimmedName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
+    // Check if user with this specific Name + Contact Number already exists
+    const existingUser = await User.findOne({ 
+      contactNumber, 
+      name: new RegExp(`^${escapedName}$`, 'i') 
+    });
     if (existingUser) {
-      return NextResponse.json({ error: 'User with this contact number already exists' }, { status: 409 });
+      return NextResponse.json({ error: 'A member with this name and contact number already exists' }, { status: 409 });
     }
 
     // Create the user
