@@ -22,29 +22,24 @@ export default function UserDashboard() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        // Fetch all events
-        const eventsRes = await fetch('/api/admin/events');
-        let sortedEvents: any[] = [];
+        // Run API calls in parallel to eliminate waterfall latency
+        const [eventsRes, meRes] = await Promise.all([
+          fetch('/api/admin/events'),
+          fetch('/api/auth/me')
+        ]);
+
         if (eventsRes.ok) {
           const data = await eventsRes.json();
-          sortedEvents = (data.events || []).sort((a: any, b: any) =>
+          const sortedEvents = (data.events || []).sort((a: any, b: any) =>
             new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime()
           );
           setEvents(sortedEvents);
         }
 
-        // Fetch current user & their registered events
-        const meRes = await fetch('/api/auth/me');
         if (meRes.ok) {
           const meData = await meRes.json();
           setCurrentUser(meData.user);
-          if (meData.user?._id) {
-            const userRes = await fetch(`/api/admin/users/${meData.user._id}`);
-            if (userRes.ok) {
-              const userData = await userRes.json();
-              setRegisteredEvents(userData.registeredEvents || []);
-            }
-          }
+          setRegisteredEvents(meData.registeredEvents || []);
         } else {
           router.push('/login');
           return;
