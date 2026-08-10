@@ -215,7 +215,12 @@ export default function LoginPage() {
       <div className={styles.rightPanel}>
         <div className={`reveal ${styles.card}`}>
           <h2 className={styles.title}>{t.welcomeBack}</h2>
-          <p className={styles.subtitle}>{t.signInToContinue}</p>
+          <p className={styles.subtitle}>
+            {mode === 'login' 
+              ? 'Enter your Name & 10-digit mobile number to sign in or register instantly.'
+              : 'Enter admin passcode to access church administration.'
+            }
+          </p>
 
           <div className={styles.segmentedControl}>
             <div 
@@ -245,7 +250,7 @@ export default function LoginPage() {
               <>
                 <div className={styles.inputWrapper}>
                   <label className={`${styles.floatingLabel} ${(focusedInput === 'name' || name) ? styles.floating : ''}`}>
-                    {t.fullName}
+                    {t.fullName} (e.g. John Doe)
                   </label>
                   <input
                     type="text"
@@ -259,7 +264,7 @@ export default function LoginPage() {
                 </div>
                 <div className={styles.inputWrapper}>
                   <label className={`${styles.floatingLabel} ${(focusedInput === 'contact' || contactNumber) ? styles.floating : ''}`}>
-                    {t.contactNumber}
+                    {t.contactNumber} (e.g. 9876543210)
                   </label>
                   <input
                     type="tel"
