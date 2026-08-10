@@ -249,30 +249,28 @@ export default function LoginPage() {
             {mode === 'login' && (
               <>
                 <div className={styles.inputWrapper}>
-                  <label className={`${styles.floatingLabel} ${(focusedInput === 'name' || name) ? styles.floating : ''}`}>
-                    {t.fullName} (e.g. John Doe)
+                  <label className={styles.inputLabel}>
+                    👤 Full Name
                   </label>
                   <input
                     type="text"
+                    placeholder="Enter your name (e.g. John Doe)"
                     className={styles.input}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    onFocus={() => setFocusedInput('name')}
-                    onBlur={() => setFocusedInput(null)}
                     required
                   />
                 </div>
                 <div className={styles.inputWrapper}>
-                  <label className={`${styles.floatingLabel} ${(focusedInput === 'contact' || contactNumber) ? styles.floating : ''}`}>
-                    {t.contactNumber} (e.g. 9876543210)
+                  <label className={styles.inputLabel}>
+                    📱 10-Digit Mobile Number
                   </label>
                   <input
                     type="tel"
+                    placeholder="Enter 10-digit phone (e.g. 9876543210)"
                     className={styles.input}
                     value={contactNumber}
                     onChange={(e) => setContactNumber(e.target.value)}
-                    onFocus={() => setFocusedInput('contact')}
-                    onBlur={() => setFocusedInput(null)}
                     maxLength={10}
                     required
                   />
@@ -282,16 +280,15 @@ export default function LoginPage() {
 
             {mode === 'admin' && (
               <div className={styles.inputWrapper}>
-                <label className={`${styles.floatingLabel} ${(focusedInput === 'password' || password) ? styles.floating : ''}`}>
-                  {t.adminPasscode}
+                <label className={styles.inputLabel}>
+                  🔑 Admin Passcode
                 </label>
                 <input
                   type="password"
+                  placeholder="Enter admin passcode (JESUSLOVESYOU)"
                   className={styles.input}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedInput('password')}
-                  onBlur={() => setFocusedInput(null)}
                   required
                 />
               </div>

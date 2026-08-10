@@ -208,40 +208,40 @@
 }
 
 .inputWrapper {
-  position: relative;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.floatingLabel {
-  position: absolute;
-  left: 16px;
-  top: 16px;
-  font-size: 16px;
-  color: #86868b;
-  pointer-events: none;
-  transition: all 0.2s ease;
-}
-
-.floatingLabel.floating {
-  top: 8px;
-  font-size: 12px;
+.inputLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e4e4e7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .input {
-  background: #000000;
-  border: 1px solid #272729;
-  border-radius: 10px;
-  padding: 24px 16px 8px 16px;
-  color: #f4f8fb;
-  font-size: 16px;
+  background: #18181c;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #ffffff;
+  font-size: 15px;
   outline: none;
-  transition: border-color 0.3s ease;
-  height: 56px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  height: 48px;
+}
+
+.input::placeholder {
+  color: #71717a;
+  font-size: 14px;
 }
 
 .input:focus {
   border-color: #dc143c;
+  background: #202026;
 }
 
 .submitBtn {
