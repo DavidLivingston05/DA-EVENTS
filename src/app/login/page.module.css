@@ -1,115 +1,133 @@
 .container {
   display: flex;
   min-height: 100vh;
-  background-color: #000000;
+  background-color: #070709;
   color: #f4f8fb;
-  font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
-/* Background Orbs */
+/* Background Glowing Orbs */
 .orbTopRight, .orbBottomLeft, .orbCenterRight {
   position: fixed;
   border-radius: 50%;
-  filter: blur(100px);
+  filter: blur(120px);
   z-index: 0;
-  opacity: 0.4;
-  animation: float 10s ease-in-out infinite alternate;
+  opacity: 0.35;
+  pointer-events: none;
+  animation: float 12s ease-in-out infinite alternate;
 }
 
 .orbTopRight {
-  top: -10%;
-  right: -5%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(220,20,60,0.8) 0%, rgba(220,20,60,0) 70%);
-  animation-delay: 0s;
+  top: -12%;
+  right: -8%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.75) 0%, rgba(220, 20, 60, 0) 70%);
 }
 
 .orbBottomLeft {
-  bottom: -10%;
-  left: -5%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(128,0,128,0.6) 0%, rgba(128,0,128,0) 70%);
-  animation-delay: -3s;
+  bottom: -12%;
+  left: -8%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(120, 0, 160, 0.55) 0%, rgba(120, 0, 160, 0) 70%);
+  animation-delay: -4s;
 }
 
 .orbCenterRight {
-  top: 40%;
-  right: 15%;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(220,20,60,0.5) 0%, rgba(220,20,60,0) 70%);
-  animation-delay: -7s;
+  top: 35%;
+  right: 10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.45) 0%, rgba(220, 20, 60, 0) 70%);
+  animation-delay: -8s;
 }
 
 @keyframes float {
   0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-30px) scale(1.05); }
+  100% { transform: translateY(-25px) scale(1.05); }
 }
 
-/* Left Panel */
+/* Left Panel (Desktop) */
 .leftPanel {
-  flex: 1;
-  background-color: #000000;
+  flex: 1.1;
+  background-color: #070709;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 4rem 8rem;
+  padding: 4rem 6rem;
   z-index: 1;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .leftContent {
   position: relative;
   z-index: 2;
+  max-width: 540px;
 }
 
 .logoText {
-  font-family: 'Playfair Display', serif;
-  font-size: 80px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0 0 1rem 0;
-  color: #f4f8fb;
+  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.15;
 }
 
 .tagline {
-  font-size: 20px;
-  color: #86868b;
-  margin-bottom: 4rem;
+  font-size: 18px;
+  color: #a1a1aa;
+  margin-bottom: 3.5rem;
+  line-height: 1.6;
 }
 
 .features {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .featureRow {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+
+.featureRow:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(220, 20, 60, 0.3);
+  transform: translateX(4px);
 }
 
 .featureIcon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  background: #161617;
-  border: 1px solid #272729;
+  background: rgba(220, 20, 60, 0.12);
+  border: 1px solid rgba(220, 20, 60, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #dc143c;
+  color: #ff3b5c;
+  flex-shrink: 0;
 }
 
 .featureText {
-  font-size: 20px;
-  font-weight: 500;
-  color: #e8e8ed;
+  font-size: 16px;
+  font-weight: 600;
+  color: #e4e4e7;
 }
 
 .bottomGlow {
@@ -118,7 +136,7 @@
   left: 0;
   right: 0;
   height: 200px;
-  background: radial-gradient(ellipse at bottom, rgba(220,20,60,0.15) 0%, rgba(0,0,0,0) 70%);
+  background: radial-gradient(ellipse at bottom, rgba(220, 20, 60, 0.18) 0%, rgba(0,0,0,0) 70%);
   pointer-events: none;
   z-index: 1;
 }
@@ -132,43 +150,92 @@
   align-items: center;
   position: relative;
   z-index: 1;
+  padding: 2rem 1.5rem;
+  width: 100%;
 }
 
+/* Mobile Header Branding */
+.mobileHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 440px;
+}
+
+.mobileLogoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(220, 20, 60, 0.12);
+  border: 1px solid rgba(220, 20, 60, 0.3);
+  padding: 8px 18px;
+  border-radius: 980px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.2);
+}
+
+.churchIcon {
+  font-size: 20px;
+}
+
+.churchBadgeTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.mobileSubtitle {
+  font-size: 13px;
+  color: #a1a1aa;
+  margin: 0;
+}
+
+/* Ultra-Glassmorphism Card */
 .card {
   width: 100%;
   max-width: 440px;
-  background: #161617;
-  border: 1px solid #272729;
-  border-radius: 20px;
-  padding: 40px;
+  background: rgba(18, 18, 22, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 32px 28px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 0.5rem 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.4rem 0;
   text-align: center;
-  color: #f4f8fb;
+  color: #ffffff;
 }
 
 .subtitle {
-  font-size: 14px;
-  color: #86868b;
+  font-size: 13px;
+  color: #a1a1aa;
   text-align: center;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
 }
 
+/* Apple Segmented Control */
 .segmentedControl {
   position: relative;
   display: flex;
-  background: #272729;
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   padding: 4px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .segmentIndicator {
@@ -177,34 +244,39 @@
   bottom: 4px;
   left: 4px;
   width: calc(50% - 4px);
-  background: #424245;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
+  border-radius: 10px;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.4);
 }
 
 .segmentButton {
   flex: 1;
   background: none;
   border: none;
-  padding: 8px 0;
-  color: #86868b;
+  padding: 10px 0;
+  color: #a1a1aa;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   position: relative;
   z-index: 1;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .activeSegment {
-  color: #f4f8fb;
+  color: #ffffff;
 }
 
+/* Form Controls */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
 .inputWrapper {
@@ -214,24 +286,27 @@
 }
 
 .inputLabel {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: #e4e4e7;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .input {
-  background: #18181c;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 12px;
-  padding: 12px 16px;
+  background: rgba(10, 10, 14, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 14px 16px;
   color: #ffffff;
   font-size: 15px;
   outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease;
-  height: 48px;
+  transition: all 0.2s ease;
+  height: 50px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) inset;
 }
 
 .input::placeholder {
@@ -241,27 +316,31 @@
 
 .input:focus {
   border-color: #dc143c;
-  background: #202026;
+  background: rgba(18, 18, 24, 0.95);
+  box-shadow: 0 0 16px rgba(220, 20, 60, 0.3);
 }
 
 .submitBtn {
-  background: #dc143c;
+  background: linear-gradient(135deg, #dc143c 0%, #ff1a40 100%);
   color: #ffffff;
   border: none;
-  border-radius: 10px;
-  height: 50px;
+  border-radius: 14px;
+  height: 52px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  margin-top: 1rem;
-  transition: transform 0.1s ease, background 0.3s ease;
+  margin-top: 0.5rem;
+  box-shadow: 0 8px 24px rgba(220, 20, 60, 0.4);
+  transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  letter-spacing: -0.01em;
 }
 
 .submitBtn:active {
   transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
 }
 
 .submitBtn:disabled {
@@ -270,8 +349,8 @@
 }
 
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 2px solid rgba(255,255,255,0.3);
   border-top-color: #fff;
   border-radius: 50%;
@@ -283,14 +362,15 @@
 }
 
 .errorMsg {
-  background: rgba(220, 20, 60, 0.1);
-  border: 1px solid #dc143c;
-  color: #ff4d4d;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
+  background: rgba(220, 20, 60, 0.15);
+  border: 1px solid rgba(220, 20, 60, 0.4);
+  color: #ff4d6d;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .bottomToggle {
@@ -301,31 +381,44 @@
 .adminToggleLink {
   background: none;
   border: none;
-  color: #86868b;
+  color: #a1a1aa;
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .adminToggleLink:hover {
-  color: #e8e8ed;
+  color: #ffffff;
+  text-decoration: underline;
 }
 
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .leftPanel {
     display: none;
   }
-  
+
   .rightPanel {
-    padding: 2rem;
+    padding: 1.5rem 1rem;
   }
-  
+
   .card {
-    padding: 30px 20px;
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .submitBtn {
+    height: 48px;
+    font-size: 15px;
   }
 }
 
-/* Light Mode Overrides */
+/* Light Mode Support */
 .containerLight {
   background-color: #f8fafc;
   color: #0f172a;
@@ -334,19 +427,17 @@
   background-color: #f8fafc;
 }
 .containerLight .logoText {
-  color: #0f172a;
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .containerLight .tagline, .containerLight .featureText {
   color: #475569;
 }
-.containerLight .featureIcon {
-  background: rgba(220, 20, 60, 0.1);
-  color: #dc143c;
-}
 .containerLight .card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 .containerLight .title {
   color: #0f172a;
@@ -354,31 +445,16 @@
 .containerLight .subtitle {
   color: #64748b;
 }
-.containerLight .segmentedControl {
-  background: #f1f5f9;
-}
-.containerLight .segmentButton {
-  color: #64748b;
-}
-.containerLight .segmentButton.activeSegment {
-  color: #0f172a;
-}
-.containerLight .segmentIndicator {
-  background: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.containerLight .inputLabel {
+  color: #334155;
 }
 .containerLight .input {
   background: #ffffff;
   border: 1px solid #cbd5e1;
   color: #0f172a;
+  box-shadow: none;
 }
 .containerLight .input:focus {
   border-color: #dc143c;
   background: #ffffff;
-}
-.containerLight .floatingLabel {
-  color: #64748b;
-}
-.containerLight .adminLabel {
-  color: #64748b;
 }

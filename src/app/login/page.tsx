@@ -213,12 +213,21 @@ export default function LoginPage() {
 
       {/* Right Panel */}
       <div className={styles.rightPanel}>
+        {/* Mobile Header Branding */}
+        <div className={styles.mobileHeader}>
+          <div className={styles.mobileLogoBadge}>
+            <span className={styles.churchIcon}>⛪</span>
+            <span className={styles.churchBadgeTitle}>Rose of Sharon IPC Church</span>
+          </div>
+          <p className={styles.mobileSubtitle}>Prayer Meetings & Worship Service Portal</p>
+        </div>
+
         <div className={`reveal ${styles.card}`}>
-          <h2 className={styles.title}>{t.welcomeBack}</h2>
+          <h2 className={styles.title}>{mode === 'login' ? 'Member Access' : 'Admin Access'}</h2>
           <p className={styles.subtitle}>
             {mode === 'login' 
-              ? 'Enter your Name & 10-digit mobile number to sign in or register instantly.'
-              : 'Enter admin passcode to access church administration.'
+              ? 'Enter your Full Name & 10-Digit Mobile Number to sign in or register instantly.'
+              : 'Enter the admin passcode to access church management.'
             }
           </p>
 
