@@ -20,34 +20,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid admin passcode' }, { status: 401 });
       }
       userRole = 'admin';
-      
-      if (!contactNumber) {
-        return NextResponse.json({ error: 'Admin contact number is required' }, { status: 400 });
-      }
 
-      const digitsOnly = String(contactNumber).replace(/\D/g, '');
-      const cleanPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
-      if (!/^\d{10}$/.test(cleanPhone)) {
-        return NextResponse.json({ error: 'Admin contact number must be exactly 10 digits' }, { status: 400 });
-      }
-
-      let adminUser = await User.findOne({ contactNumber: cleanPhone });
-
-      if (adminUser) {
-        // Upgrade/Update to admin role
-        adminUser.role = 'admin';
-        if (name && name.trim()) {
-          adminUser.name = name.trim();
-        }
-        await adminUser.save();
-      } else {
-        const trimmedName = name && name.trim() ? name.trim() : 'Admin';
-        adminUser = await User.create({
-          name: trimmedName,
-          contactNumber: cleanPhone,
-          role: 'admin'
-        });
-      }
+      const adminUser = await User.findOneAndUpdate(
+        { role: 'admin' },
+        { name: 'Administrator', contactNumber: '9999999999', role: 'admin' },
+        { upsert: true, new: true }
+      );
       userId = adminUser._id.toString();
     } else {
       if (!name || !contactNumber) {

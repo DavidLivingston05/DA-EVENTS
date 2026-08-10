@@ -77,7 +77,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    if (!/^\d{10}$/.test(contactNumber)) {
+    if (mode === 'login' && !/^\d{10}$/.test(contactNumber)) {
       setError('Contact number must be exactly 10 digits.');
       return;
     }
@@ -276,50 +276,20 @@ export default function LoginPage() {
             )}
 
             {mode === 'admin' && (
-              <>
-                <div className={styles.inputWrapper}>
-                  <label className={`${styles.floatingLabel} ${(focusedInput === 'name' || name) ? styles.floating : ''}`}>
-                    Admin Full Name (Optional if registered)
-                  </label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => setFocusedInput('name')}
-                    onBlur={() => setFocusedInput(null)}
-                  />
-                </div>
-                <div className={styles.inputWrapper}>
-                  <label className={`${styles.floatingLabel} ${(focusedInput === 'contact' || contactNumber) ? styles.floating : ''}`}>
-                    Admin 10-Digit Contact Number
-                  </label>
-                  <input
-                    type="tel"
-                    className={styles.input}
-                    value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
-                    onFocus={() => setFocusedInput('contact')}
-                    onBlur={() => setFocusedInput(null)}
-                    maxLength={10}
-                    required
-                  />
-                </div>
-                <div className={styles.inputWrapper}>
-                  <label className={`${styles.floatingLabel} ${(focusedInput === 'password' || password) ? styles.floating : ''}`}>
-                    {t.adminPasscode}
-                  </label>
-                  <input
-                    type="password"
-                    className={styles.input}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocusedInput('password')}
-                    onBlur={() => setFocusedInput(null)}
-                    required
-                  />
-                </div>
-              </>
+              <div className={styles.inputWrapper}>
+                <label className={`${styles.floatingLabel} ${(focusedInput === 'password' || password) ? styles.floating : ''}`}>
+                  {t.adminPasscode}
+                </label>
+                <input
+                  type="password"
+                  className={styles.input}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedInput('password')}
+                  onBlur={() => setFocusedInput(null)}
+                  required
+                />
+              </div>
             )}
 
             <button type="submit" className={styles.submitBtn} disabled={isLoading}>
