@@ -1,63 +1,60 @@
 import Link from 'next/link';
-import styles from '../page.module.css';
 
 export default function AboutPage() {
   return (
-    <main className={styles.main}>
-      <nav className={`${styles.navbar} ${styles.scrolled}`}>
-        <div className={styles.logo}>
-          <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>DA-ROS</Link>
-        </div>
-        <div className={styles.navLinks}>
-          <Link href="/" className={styles.navLink}>Home</Link>
-          <Link href="/about" className={styles.navLink} style={{ color: '#fff' }}>About</Link>
-          <Link href="/events" className={styles.navLink}>Events</Link>
-        </div>
-        <Link href="/login" className={styles.loginBtn}>
-          Login
-        </Link>
-      </nav>
+    <main style={{ minHeight: '100vh', background: '#0a0a0c', color: '#fff', padding: '40px 20px', fontFamily: 'sans-serif' }}>
+      <div style={{ maxWidth: '600px', margin: '60px auto 0', textAlign: 'center' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⛪</div>
+        <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px', color: '#fff' }}>
+          Rose of Sharon IPC Church
+        </h1>
+        <p style={{ fontSize: '16px', color: '#a1a1aa', lineHeight: 1.6, marginBottom: '32px' }}>
+          Welcome to Rose of Sharon IPC Church. This application allows church members and guests to view upcoming prayer meetings, Sunday worship services, youth fellowships, and special gatherings, and register with a single click.
+        </p>
 
-      <section className={styles.hero} style={{ minHeight: 'auto', paddingTop: '140px', paddingBottom: '60px' }}>
-        <div className={styles.glowTopRight}></div>
-        <div className={styles.heroContent} style={{ maxWidth: '800px' }}>
-          <div className={styles.eyebrow}>About Us</div>
-          <h1 className={styles.h1}>Connecting Our Church Community</h1>
-          <p className={styles.subtitle} style={{ maxWidth: '640px', margin: '0 auto 32px' }}>
-            DA-ROS is an event management platform built specifically for our church family. 
-            Discover upcoming services, register for gatherings, and stay connected with ease.
-          </p>
-          <div className={styles.ctaRow}>
-            <Link href="/login" className={styles.btnPrimary}>Join Community</Link>
-            <Link href="/events" className={styles.btnOutline}>Explore Events</Link>
-          </div>
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', textAlign: 'left', marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', color: '#dc143c' }}>
+            What We Do:
+          </h3>
+          <ul style={{ paddingLeft: '20px', color: '#d4d4d8', lineHeight: 1.8, fontSize: '15px' }}>
+            <li><strong>Sunday Worship Services:</strong> Weekly praise, worship, and sermon gatherings.</li>
+            <li><strong>Prayer Meetings:</strong> Mid-week prayer gatherings and fasting prayers.</li>
+            <li><strong>Youth & Family Fellowships:</strong> Community gatherings for all age groups.</li>
+            <li><strong>Easy Event Registration:</strong> Register yourself and family members in 5 seconds.</li>
+          </ul>
         </div>
-      </section>
 
-      <section className={styles.featuresSection} style={{ paddingTop: '20px' }}>
-        <div className={styles.featuresGrid}>
-          <div className={styles.featureCard}>
-            <div className={styles.cardIcon}>🎯</div>
-            <h3 className={styles.cardTitle}>Our Mission</h3>
-            <p className={styles.cardDesc}>To simplify event discovery and registration so every member can actively participate in church life.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.cardIcon}>🤝</div>
-            <h3 className={styles.cardTitle}>Community First</h3>
-            <p className={styles.cardDesc}>Built with love for our church, keeping attendance tracking, service schedules, and announcements seamless.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.cardIcon}>📱</div>
-            <h3 className={styles.cardTitle}>Modern & Accessible</h3>
-            <p className={styles.cardDesc}>Works on mobile and desktop as a full Progressive Web App for instant access anywhere.</p>
-          </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <Link
+            href="/home"
+            style={{
+              background: '#dc143c',
+              color: '#fff',
+              padding: '12px 24px',
+              borderRadius: '980px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              fontSize: '15px'
+            }}
+          >
+            View Upcoming Events →
+          </Link>
+          <Link
+            href="/login"
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              color: '#fff',
+              padding: '12px 24px',
+              borderRadius: '980px',
+              fontWeight: 600,
+              textDecoration: 'none',
+              fontSize: '15px'
+            }}
+          >
+            Sign In / Register
+          </Link>
         </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.footerLogo}>DA-ROS</div>
-        <div className={styles.copyright}>© {new Date().getFullYear()} DA-ROS. All rights reserved.</div>
-      </footer>
+      </div>
     </main>
   );
 }
