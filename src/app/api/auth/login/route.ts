@@ -12,35 +12,43 @@ export async function POST(request: Request) {
     let userRole = 'user';
     let userId = '';
 
+    // Purge default master admin if it exists
+    await User.deleteMany({ contactNumber: '0000000000' });
+
     if (mode === 'admin') {
       if (password !== 'JESUSLOVESYOU') {
         return NextResponse.json({ error: 'Invalid admin passcode' }, { status: 401 });
       }
       userRole = 'admin';
       
-      if (name && name.trim() && contactNumber) {
-        const digitsOnly = String(contactNumber).replace(/\D/g, '');
-        const cleanPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
-        if (!/^\d{10}$/.test(cleanPhone)) {
-          return NextResponse.json({ error: 'Contact number must be exactly 10 digits' }, { status: 400 });
-        }
-
-        const trimmedName = name.trim();
-        const adminUser = await User.findOneAndUpdate(
-          { contactNumber: cleanPhone, name: new RegExp(`^${trimmedName}$`, 'i') }, 
-          { name: trimmedName, contactNumber: cleanPhone, role: 'admin' },
-          { upsert: true, new: true }
-        );
-        userId = adminUser._id.toString();
-      } else {
-        // Upsert default master admin user
-        const adminUser = await User.findOneAndUpdate(
-          { contactNumber: '0000000000' }, 
-          { name: 'Administrator', contactNumber: '0000000000', role: 'admin' },
-          { upsert: true, new: true }
-        );
-        userId = adminUser._id.toString();
+      if (!contactNumber) {
+        return NextResponse.json({ error: 'Admin contact number is required' }, { status: 400 });
       }
+
+      const digitsOnly = String(contactNumber).replace(/\D/g, '');
+      const cleanPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
+      if (!/^\d{10}$/.test(cleanPhone)) {
+        return NextResponse.json({ error: 'Admin contact number must be exactly 10 digits' }, { status: 400 });
+      }
+
+      let adminUser = await User.findOne({ contactNumber: cleanPhone });
+
+      if (adminUser) {
+        // Upgrade/Update to admin role
+        adminUser.role = 'admin';
+        if (name && name.trim()) {
+          adminUser.name = name.trim();
+        }
+        await adminUser.save();
+      } else {
+        const trimmedName = name && name.trim() ? name.trim() : 'Admin';
+        adminUser = await User.create({
+          name: trimmedName,
+          contactNumber: cleanPhone,
+          role: 'admin'
+        });
+      }
+      userId = adminUser._id.toString();
     } else {
       if (!name || !contactNumber) {
         return NextResponse.json({ error: 'Name and contact number are required' }, { status: 400 });

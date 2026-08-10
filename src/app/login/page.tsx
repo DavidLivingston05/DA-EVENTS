@@ -77,18 +77,18 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    if ((mode === 'login' || (mode === 'admin' && isAdminRegister)) && !/^\d{10}$/.test(contactNumber)) {
+    if (!/^\d{10}$/.test(contactNumber)) {
       setError('Contact number must be exactly 10 digits.');
       return;
     }
 
-    if ((mode === 'login' || (mode === 'admin' && isAdminRegister)) && !name.trim()) {
+    if (mode === 'login' && !name.trim()) {
       setError('Name is required.');
       return;
     }
 
     if (mode === 'admin' && !password.trim()) {
-      setError('Admin password is required.');
+      setError('Admin passcode is required.');
       return;
     }
 
@@ -100,8 +100,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           mode, 
-          name: (mode === 'admin' && !isAdminRegister) ? '' : name, 
-          contactNumber: (mode === 'admin' && !isAdminRegister) ? '' : contactNumber, 
+          name, 
+          contactNumber, 
           password 
         }),
       });
@@ -132,7 +132,6 @@ export default function LoginPage() {
 
   const handleModeChange = (newMode: 'login' | 'admin') => {
     setMode(newMode);
-    setIsAdminRegister(false);
     setError('');
   };
 
@@ -278,65 +277,34 @@ export default function LoginPage() {
 
             {mode === 'admin' && (
               <>
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '1.25rem', background: 'rgba(0,0,0,0.3)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <button
-                    type="button"
-                    onClick={() => { setIsAdminRegister(false); setError(''); }}
-                    style={{
-                      flex: 1, padding: '6px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer',
-                      background: !isAdminRegister ? 'var(--crimson, #dc143c)' : 'transparent',
-                      color: !isAdminRegister ? '#fff' : '#888'
-                    }}
-                  >
-                    Master Sign In
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsAdminRegister(true); setError(''); }}
-                    style={{
-                      flex: 1, padding: '6px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer',
-                      background: isAdminRegister ? 'var(--crimson, #dc143c)' : 'transparent',
-                      color: isAdminRegister ? '#fff' : '#888'
-                    }}
-                  >
-                    Register New Admin
-                  </button>
+                <div className={styles.inputWrapper}>
+                  <label className={`${styles.floatingLabel} ${(focusedInput === 'name' || name) ? styles.floating : ''}`}>
+                    Admin Full Name (Optional if registered)
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onFocus={() => setFocusedInput('name')}
+                    onBlur={() => setFocusedInput(null)}
+                  />
                 </div>
-
-                {isAdminRegister && (
-                  <>
-                    <div className={styles.inputWrapper}>
-                      <label className={`${styles.floatingLabel} ${(focusedInput === 'name' || name) ? styles.floating : ''}`}>
-                        Admin Full Name
-                      </label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        onFocus={() => setFocusedInput('name')}
-                        onBlur={() => setFocusedInput(null)}
-                        required
-                      />
-                    </div>
-                    <div className={styles.inputWrapper}>
-                      <label className={`${styles.floatingLabel} ${(focusedInput === 'contact' || contactNumber) ? styles.floating : ''}`}>
-                        Admin 10-Digit Contact Number
-                      </label>
-                      <input
-                        type="tel"
-                        className={styles.input}
-                        value={contactNumber}
-                        onChange={(e) => setContactNumber(e.target.value)}
-                        onFocus={() => setFocusedInput('contact')}
-                        onBlur={() => setFocusedInput(null)}
-                        maxLength={10}
-                        required
-                      />
-                    </div>
-                  </>
-                )}
-
+                <div className={styles.inputWrapper}>
+                  <label className={`${styles.floatingLabel} ${(focusedInput === 'contact' || contactNumber) ? styles.floating : ''}`}>
+                    Admin 10-Digit Contact Number
+                  </label>
+                  <input
+                    type="tel"
+                    className={styles.input}
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    onFocus={() => setFocusedInput('contact')}
+                    onBlur={() => setFocusedInput(null)}
+                    maxLength={10}
+                    required
+                  />
+                </div>
                 <div className={styles.inputWrapper}>
                   <label className={`${styles.floatingLabel} ${(focusedInput === 'password' || password) ? styles.floating : ''}`}>
                     {t.adminPasscode}
