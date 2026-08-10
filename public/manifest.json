@@ -1,7 +1,7 @@
 {
-  "name": "DA-ROS Church Events & Operations",
-  "short_name": "DA-ROS",
-  "description": "Discover, register, manage member attendance, and stay connected with Church Events.",
+  "name": "Rose of Sharon IPC Church Events",
+  "short_name": "ROS IPC",
+  "description": "Register for upcoming Prayer Meetings, Sunday Services, and Gatherings at Rose of Sharon IPC Church.",
   "start_url": "/home",
   "display": "standalone",
   "background_color": "#0a0a0c",
@@ -30,16 +30,16 @@
   ],
   "shortcuts": [
     {
-      "name": "Church Events",
+      "name": "Prayer & Events",
       "short_name": "Events",
-      "description": "View upcoming church events and service schedule",
+      "description": "View upcoming prayer meetings and service schedule",
       "url": "/home",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Admin Dashboard",
       "short_name": "Admin",
-      "description": "Manage members, attendance, and events",
+      "description": "Manage members, attendance, and prayer events",
       "url": "/admin",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }

@@ -15,13 +15,13 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "DA-ROS | Church Event Management",
-  description: "Discover, register, and manage church events seamlessly with DA-ROS.",
+  title: "Rose of Sharon IPC Church | Event & Prayer Registration",
+  description: "Register for upcoming Prayer Meetings, Sunday Worship Services, Youth Fellowships, and Special Gatherings at Rose of Sharon IPC Church.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "DA-ROS Church Events",
+    title: "Rose of Sharon IPC Church",
   },
   icons: {
     icon: "/icons/icon-192x192.png",
