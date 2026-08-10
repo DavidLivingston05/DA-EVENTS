@@ -7,6 +7,7 @@ export interface IEvent extends mongoose.Document {
   locationAddress: string;
   gmapLink?: string;
   travelCost: string;
+  organizerPhone?: string;
   createdAt: Date;
 }
 
@@ -23,7 +24,11 @@ const EventSchema = new mongoose.Schema<IEvent>({
     required: false,
   },
   travelCost: { type: String, required: false },
+  organizerPhone: { type: String, required: false, default: '' },
   createdAt: { type: Date, default: Date.now },
 });
+
+EventSchema.index({ date: 1 });
+EventSchema.index({ createdAt: -1 });
 
 export default mongoose.models.Event || mongoose.model<IEvent>('Event', EventSchema);

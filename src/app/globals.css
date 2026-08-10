@@ -9,25 +9,61 @@
   --border: rgba(255, 255, 255, 0.08);
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic Viewport Height for mobile browsers */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
 }
 
-/* Hide scrollbars globally but keep functionality */
+/* Touch manipulation and instant tap response for buttons, links, and cards */
+button, 
+a, 
+input, 
+select, 
+textarea,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Active tap feedback for mobile touch devices */
+@media (pointer: coarse) {
+  button:active, 
+  a:active, 
+  [role="button"]:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+}
+
+/* Lightweight mobile backdrop filters for 120 FPS lag-free scrolling */
+@media (max-width: 768px) {
+  nav, header, [class*="modalOverlay"], [class*="mobileSheet"] {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+}
+
+/* Hide scrollbars globally but keep smooth scrolling functionality */
 *::-webkit-scrollbar {
   display: none;
 }

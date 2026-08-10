@@ -57,11 +57,12 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(220, 20, 60, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.05) 0%, transparent 65%);
   top: -10%;
   left: -10%;
-  animation: orbFloat1 12s ease-in-out infinite;
-  filter: blur(60px);
+  animation: orbFloat1 16s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .orb2 {
@@ -69,24 +70,26 @@
   width: 700px;
   height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(80, 40, 180, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(80, 40, 180, 0.04) 0%, transparent 65%);
   bottom: -15%;
   right: -10%;
-  animation: orbFloat2 16s ease-in-out infinite;
-  filter: blur(70px);
+  animation: orbFloat2 20s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .orb3 {
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: 450px;
+  height: 450px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(220, 20, 60, 0.04) 0%, transparent 70%);
-  top: 40%;
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.04) 0%, transparent 65%);
+  top: 45%;
   left: 50%;
-  transform: translateX(-50%);
-  animation: orbFloat3 20s ease-in-out infinite;
-  filter: blur(80px);
+  margin-left: -225px;
+  animation: orbFloat3 14s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 
@@ -714,15 +717,19 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 62px;
-    background: rgba(12, 12, 16, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(12, 12, 16, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 9999;
     justify-content: space-around;
     align-items: center;
-    padding: 0 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .bottomNavItem {
@@ -846,10 +853,13 @@
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.5rem 1.25rem calc(2rem + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
     animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   @keyframes slideUp {

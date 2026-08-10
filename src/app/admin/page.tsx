@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -15,12 +15,32 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [userDetails, setUserDetails] = useState<{ upcoming: any[], history: any[] } | null>(null);
-  
+
+  // Category Management State
+  const [categories, setCategories] = useState<{ _id: string; name: string; color?: string }[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
+
+  // Search & Filter state for Users
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('All');
+
+  // Add User Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserPhone, setNewUserPhone] = useState('');
+  const [newUserCategory, setNewUserCategory] = useState<string>('General');
   const [modalError, setModalError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit User Modal State
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState('');
+  const [editUserName, setEditUserName] = useState('');
+  const [editUserPhone, setEditUserPhone] = useState('');
+  const [editUserCategory, setEditUserCategory] = useState<string>('General');
 
   // Import State
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -32,7 +52,7 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [eventDetails, setEventDetails] = useState<{ registeredUsers: any[] } | null>(null);
-  
+
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [newEventName, setNewEventName] = useState('');
   const [newEventDate, setNewEventDate] = useState(() => {
@@ -45,6 +65,7 @@ export default function AdminDashboard() {
   const [newEventLocation, setNewEventLocation] = useState('');
   const [newEventGmapLink, setNewEventGmapLink] = useState('');
   const [newEventCost, setNewEventCost] = useState('');
+  const [newEventOrganizerPhone, setNewEventOrganizerPhone] = useState('');
   const [eventModalError, setEventModalError] = useState('');
   const [isEventSubmitting, setIsEventSubmitting] = useState(false);
 
@@ -58,10 +79,43 @@ export default function AdminDashboard() {
   const [editEventLocation, setEditEventLocation] = useState('');
   const [editEventGmapLink, setEditEventGmapLink] = useState('');
   const [editEventCost, setEditEventCost] = useState('');
+  const [editEventOrganizerPhone, setEditEventOrganizerPhone] = useState('');
 
   // Attendance Tab States
   const [attendanceSelectedEvent, setAttendanceSelectedEvent] = useState<any | null>(null);
-  const [attendanceEventDetails, setAttendanceEventDetails] = useState<{ registeredUsers: any[] } | null>(null);
+  const [attendanceEventDetails, setAttendanceEventDetails] = useState<{
+    attendances?: any[];
+    registeredUsers?: any[];
+    totalMembers?: number;
+    totalGuests?: number;
+    totalHeadcount?: number;
+    presentCount?: number;
+    absentCount?: number;
+    registeredCount?: number;
+  } | null>(null);
+  const [attendanceFilterMode, setAttendanceFilterMode] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [attendanceSearchQuery, setAttendanceSearchQuery] = useState('');
+
+  // Direct Registration State (from Attendance Dashboard)
+  const [isRegMemberModalOpen, setIsRegMemberModalOpen] = useState(false);
+  const [regSearchQuery, setRegSearchQuery] = useState('');
+  const [regCategoryFilter, setRegCategoryFilter] = useState<string>('All');
+  const [regGuestCounts, setRegGuestCounts] = useState<Record<string, number>>({});
+  const [regGuestNamesMap, setRegGuestNamesMap] = useState<Record<string, string>>({});
+  const [regSubmittingUserId, setRegSubmittingUserId] = useState<string | null>(null);
+
+  // Direct Registration State (from User Management Tab)
+  const [isUserRegEventModalOpen, setIsUserRegEventModalOpen] = useState(false);
+  const [userRegSelectedEventId, setUserRegSelectedEventId] = useState<string>('');
+  const [userRegAdditionalCount, setUserRegAdditionalCount] = useState<number>(0);
+  const [userRegGuestNames, setUserRegGuestNames] = useState<string>('');
+  const [isUserRegSubmitting, setIsUserRegSubmitting] = useState(false);
+  const [userRegError, setUserRegError] = useState<string>('');
+
+  // Broadcast & Batch Attendance State
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [broadcastType, setBroadcastType] = useState<'announcement' | 'reminder'>('announcement');
+  const [broadcastCopied, setBroadcastCopied] = useState(false);
 
   // Profile Dropdown
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -73,17 +127,35 @@ export default function AdminDashboard() {
   useScrollReveal();
 
   useEffect(() => {
+    let mouseX = 0;
+    let mouseY = 0;
+    let scrollY = 0;
+    let rafId: number | null = null;
+
+    const updateTransform = () => {
+      if (bgRef.current) {
+        const xPercent = (mouseX / window.innerWidth - 0.5) * 12;
+        const yPercent = (mouseY / window.innerHeight - 0.5) * 8 + (scrollY * 0.2);
+        bgRef.current.style.transform = `translate3d(${xPercent.toFixed(2)}px, ${yPercent.toFixed(2)}px, 0px) scale(1.08)`;
+      }
+      rafId = null;
+    };
+
+    const requestUpdate = () => {
+      if (!rafId) {
+        rafId = requestAnimationFrame(updateTransform);
+      }
+    };
+
     const handleScroll = () => {
-      if (!bgRef.current) return;
-      const scrollY = window.scrollY;
-      bgRef.current.style.transform = `translateY(${scrollY * 0.35}px) scale(1.08)`;
+      scrollY = window.scrollY;
+      requestUpdate();
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!bgRef.current) return;
-      const xPercent = (e.clientX / window.innerWidth - 0.5) * 12;
-      const yPercent = (e.clientY / window.innerHeight - 0.5) * 8;
-      bgRef.current.style.transform = `translate(${xPercent}px, ${yPercent}px) scale(1.08)`;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      requestUpdate();
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -91,8 +163,10 @@ export default function AdminDashboard() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
+
   // Calendar State — default to today
   const todayStr = (() => {
     const t = new Date();
@@ -103,7 +177,7 @@ export default function AdminDashboard() {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<string | null>(todayStr);
   const [eventViewMode, setEventViewMode] = useState<'calendar' | 'timeline'>('calendar');
 
-  // Weekly Schedule State (for suggestions)
+  // Weekly Schedule State
   const [weeklySchedule, setWeeklySchedule] = useState<Record<string, string[]>>({});
 
   // Add Users to Event modal
@@ -114,11 +188,20 @@ export default function AdminDashboard() {
   // Mobile detail sheet state
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
 
+  const authFetch = useCallback(async (url: string, options: RequestInit = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null;
+    const headers = new Headers(options.headers || {});
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return fetch(url, { ...options, headers });
+  }, []);
+
   // Admin authentication check on mount
   useEffect(() => {
     const checkAdminAuth = async () => {
       try {
-        const res = await fetch('/api/auth/me');
+        const res = await authFetch('/api/auth/me');
         if (!res.ok) {
           router.push('/login?mode=admin');
           return;
@@ -133,39 +216,100 @@ export default function AdminDashboard() {
       }
     };
     checkAdminAuth();
-  }, [router]);
+  }, [router, authFetch]);
+
+  const handleAdminLogout = async () => {
+    try {
+      if (typeof window !== 'undefined') localStorage.removeItem('auth-token');
+      await authFetch('/api/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Failed to logout', err);
+    } finally {
+      window.location.href = '/login?mode=admin';
+    }
+  };
+
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/admin/categories');
+      const data = await res.json();
+      if (res.ok) {
+        setCategories(data.categories || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch categories', err);
+    }
+  };
+
+  const handleCreateCategory = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newCategoryName.trim()) return;
+    setIsCreatingCategory(true);
+    setCategoryError('');
+
+    try {
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create category');
+
+      setCategories(data.categories || []);
+      setNewCategoryName('');
+    } catch (err: any) {
+      setCategoryError(err.message);
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    try {
+      const res = await fetch(`/api/admin/categories/${categoryId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setCategories(data.categories || []);
+      }
+    } catch (err) {
+      console.error('Failed to delete category', err);
+    }
+  };
 
   // Fetch users when on Add User tab
   useEffect(() => {
+    fetchCategories();
     if (activeTab === 'addUser') {
       fetchUsers();
     } else if (activeTab === 'createEvent') {
       fetchEvents();
       fetchUsers();
       fetchWeeklySchedule();
+    } else if (activeTab === 'attendance') {
+      fetchEvents(true);
+      fetchUsers();
     }
   }, [activeTab]);
 
   const fetchWeeklySchedule = async () => {
     try {
-      const res = await fetch('/api/admin/weekly-schedule');
+      const res = await authFetch('/api/admin/weekly-schedule');
       const data = await res.json();
-      if (data.schedule) {
+      if (data.schedule && data.schedule.length > 0) {
         const map: Record<string, string[]> = {};
-        if (data.schedule && data.schedule.length > 0) {
+        data.schedule.forEach((s: any) => { map[s.day] = s.services; });
+        setWeeklySchedule(map);
+      } else {
+        await authFetch('/api/admin/weekly-schedule/seed', { method: 'POST' });
+        const seeded = await authFetch('/api/admin/weekly-schedule');
+        const seededData = await seeded.json();
+        if (seededData.schedule) {
           const map: Record<string, string[]> = {};
-          data.schedule.forEach((s: any) => { map[s.day] = s.services; });
+          seededData.schedule.forEach((s: any) => { map[s.day] = s.services; });
           setWeeklySchedule(map);
-        } else {
-          // Auto-seed if DB is empty
-          await fetch('/api/admin/weekly-schedule/seed', { method: 'POST' });
-          const seeded = await fetch('/api/admin/weekly-schedule');
-          const seededData = await seeded.json();
-          if (seededData.schedule) {
-            const map: Record<string, string[]> = {};
-            seededData.schedule.forEach((s: any) => { map[s.day] = s.services; });
-            setWeeklySchedule(map);
-          }
         }
       }
     } catch (err) {
@@ -175,7 +319,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/admin/users');
+      const res = await authFetch('/api/admin/users');
       const data = await res.json();
       if (data.users) {
         setUsers(data.users);
@@ -185,25 +329,60 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchEvents = async (autoSelectAttendance = false) => {
+    try {
+      const res = await authFetch('/api/admin/events');
+      const data = await res.json();
+      const loadedEvents = data.events || [];
+      setEvents(loadedEvents);
+
+      if (autoSelectAttendance && loadedEvents.length > 0) {
+        handleSelectAttendanceEvent(loadedEvents[0]);
+      } else if (autoSelectAttendance && loadedEvents.length === 0) {
+        setAttendanceEventDetails({
+          attendances: [],
+          registeredUsers: [],
+          totalMembers: 0,
+          totalGuests: 0,
+          totalHeadcount: 0,
+          presentCount: 0,
+          absentCount: 0,
+          registeredCount: 0
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch events', err);
+      if (autoSelectAttendance) {
+        setAttendanceEventDetails({
+          attendances: [],
+          registeredUsers: [],
+          totalMembers: 0,
+          totalGuests: 0,
+          totalHeadcount: 0,
+          presentCount: 0,
+          absentCount: 0,
+          registeredCount: 0
+        });
+      }
+    }
+  };
+
   const handleSelectUser = async (user: any) => {
     setSelectedUser(user);
-    setUserDetails(null); // reset while loading
+    setUserDetails(null);
     setIsMobileDetailOpen(true);
 
     try {
       const res = await fetch(`/api/admin/users/${user._id}`);
       const data = await res.json();
 
-      // Always resolve — even if no events registered yet
       const registeredEvents: any[] = data.registeredEvents || [];
       const now = new Date();
       const upcoming: any[] = [];
       const history: any[] = [];
 
       registeredEvents.forEach((event: any) => {
-        // Parse date robustly: event.date is "YYYY-MM-DD", event.time is "HH:MM"
-        const eventDateTime = new Date(`${event.date}T${event.time || '00:00'}:00`);
-        if (eventDateTime >= now) {
+        if (isEventUpcoming(event.date)) {
           upcoming.push(event);
         } else {
           history.push(event);
@@ -213,7 +392,7 @@ export default function AdminDashboard() {
       setUserDetails({ upcoming, history });
     } catch (err) {
       console.error('Failed to fetch user details', err);
-      setUserDetails({ upcoming: [], history: [] }); // still clear loading state on error
+      setUserDetails({ upcoming: [], history: [] });
     }
   };
 
@@ -226,7 +405,11 @@ export default function AdminDashboard() {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newUserName, contactNumber: newUserPhone }),
+        body: JSON.stringify({ 
+          name: newUserName, 
+          contactNumber: newUserPhone,
+          category: newUserCategory 
+        }),
       });
 
       const data = await res.json();
@@ -235,11 +418,53 @@ export default function AdminDashboard() {
         throw new Error(data.error || 'Failed to create user');
       }
 
-      // Success
-      setUsers([data.user, ...users]); // Add to top of list
+      setUsers([data.user, ...users]);
       setIsModalOpen(false);
       setNewUserName('');
       setNewUserPhone('');
+      setNewUserCategory('General');
+    } catch (err: any) {
+      setModalError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOpenEditUser = (user: any) => {
+    setEditUserId(user._id);
+    setEditUserName(user.name);
+    setEditUserPhone(user.contactNumber);
+    setEditUserCategory(user.category || 'General');
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleEditUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setModalError('');
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch(`/api/admin/users/${editUserId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: editUserName, 
+          contactNumber: editUserPhone,
+          category: editUserCategory 
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update user');
+      }
+
+      setUsers(users.map(u => u._id === editUserId ? data.user : u));
+      if (selectedUser?._id === editUserId) {
+        setSelectedUser(data.user);
+      }
+      setIsEditUserModalOpen(false);
     } catch (err: any) {
       setModalError(err.message);
     } finally {
@@ -248,9 +473,13 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    if (!window.confirm('Are you sure you want to delete this user? This will also remove all their registrations.')) return;
+
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+
       if (res.ok) {
         setUsers(users.filter(u => u._id !== userId));
         setSelectedUser(null);
@@ -269,35 +498,26 @@ export default function AdminDashboard() {
     setIsImporting(true);
 
     try {
-      const data = await importFile.arrayBuffer();
-      const workbook = XLSX.read(data, { type: 'array' });
+      const dataBuffer = await importFile.arrayBuffer();
+      const workbook = XLSX.read(dataBuffer, { type: 'array' });
       const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-
-      // Read raw rows including header (defval keeps empty cells as '')
-      const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-      if (rawRows.length === 0) throw new Error('The sheet appears to be empty.');
-
-      // ── Foolproof Row-by-Row Detection ──────────────────────────────────
-      // Instead of relying on headers or columns, we examine every cell in every row.
+      const sheet = workbook.Sheets[firstSheetName];
+      
+      const rawRows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
       const usersToImport: any[] = [];
       
       rawRows.forEach((row: any[]) => {
-        // Skip completely empty rows
         if (!row || !row.some(c => String(c).trim() !== '')) return;
 
         let detectedName = '';
         const detectedNumbers: string[] = [];
 
-        // Check every cell in this row
         row.forEach(cell => {
           const cellStr = String(cell).trim();
           if (!cellStr) return;
 
-          // Check if this cell contains phone numbers
           const digitsOnly = cellStr.replace(/\D/g, '');
           if (digitsOnly.length >= 10) {
-            // It might be one or more phone numbers (e.g., 9876543210 / 1234567890)
             const parts = cellStr.split(/[\/,\n|&]/);
             parts.forEach(part => {
               const d = part.replace(/\D/g, '');
@@ -305,12 +525,8 @@ export default function AdminDashboard() {
                 detectedNumbers.push(d.slice(-10));
               }
             });
-          } 
-          // If it's not a phone number, check if it looks like a name
-          else if (!detectedName && cellStr.length >= 2 && /[a-zA-Z\u0900-\u097F]/.test(cellStr)) {
-            // A name usually doesn't have emails, but might have some numbers
+          } else if (!detectedName && cellStr.length >= 2 && /[a-zA-Z\u0900-\u097F]/.test(cellStr)) {
             if (!cellStr.includes('@')) {
-               // Avoid picking up header words
                const lower = cellStr.toLowerCase();
                if (!['name', 'phone', 'contact', 'mobile', 's.no', 'sl no', 'sl.no'].includes(lower)) {
                  detectedName = cellStr;
@@ -319,11 +535,11 @@ export default function AdminDashboard() {
           }
         });
 
-        // Only add if we found a valid name in this row
         if (detectedName) {
           usersToImport.push({
             name: detectedName,
-            contactNumber: detectedNumbers.length > 0 ? detectedNumbers.join(' / ') : 'no number'
+            contactNumber: detectedNumbers.length > 0 ? detectedNumbers.join(' / ') : 'no number',
+            category: 'General'
           });
         }
       });
@@ -349,18 +565,6 @@ export default function AdminDashboard() {
       setImportError(err.message);
     } finally {
       setIsImporting(false);
-    }
-  };
-
-  const fetchEvents = async () => {
-    try {
-      const res = await fetch('/api/admin/events');
-      const data = await res.json();
-      if (data.events) {
-        setEvents(data.events);
-      }
-    } catch (err) {
-      console.error('Failed to fetch events', err);
     }
   };
 
@@ -396,7 +600,6 @@ export default function AdminDashboard() {
   };
 
   const handleAddEventClick = () => {
-    // Always pre-fill with calendar date if set, otherwise today
     const dateToUse = selectedCalendarDate || todayStr;
     setNewEventDate(dateToUse);
     setIsEventModalOpen(true);
@@ -428,7 +631,7 @@ export default function AdminDashboard() {
       const res = await fetch(`/api/admin/events/${selectedEvent._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId, action: 'delete' }),
       });
       const data = await res.json();
       if (res.ok && data.registeredUsers) {
@@ -439,111 +642,262 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleAddAllUsersToEvent = async () => {
-    if (!selectedEvent) return;
-    const unaddedUsers = users.filter(user =>
-      !eventDetails?.registeredUsers?.some((u: any) => u._id === user._id)
-    );
-    if (unaddedUsers.length === 0) return;
-
-    setIsAddingAll(true);
-    try {
-      await Promise.all(
-        unaddedUsers.map(user =>
-          fetch(`/api/admin/events/${selectedEvent._id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user._id }),
-          })
-        )
-      );
-
-      const res = await fetch(`/api/admin/events/${selectedEvent._id}`);
-      const data = await res.json();
-      if (data.registeredUsers) {
-        setEventDetails({ registeredUsers: data.registeredUsers });
-      }
-    } catch (err) {
-      console.error('Failed to add all users', err);
-    } finally {
-      setIsAddingAll(false);
-    }
-  };
-
-  const handleSelectEvent = async (event: any) => {
-    setSelectedEvent(event);
-    setEventDetails(null);
-    setIsMobileDetailOpen(true);
-
-    try {
-      const res = await fetch(`/api/admin/events/${event._id}`);
-      const data = await res.json();
-      if (data.registeredUsers) {
-        setEventDetails({ registeredUsers: data.registeredUsers });
-      }
-    } catch (err) {
-      console.error('Failed to fetch event details', err);
-    }
-  };
-
   const handleSelectAttendanceEvent = async (event: any) => {
+    if (!event) return;
     setAttendanceSelectedEvent(event);
     setAttendanceEventDetails(null);
     setIsMobileDetailOpen(true);
 
     try {
-      const res = await fetch(`/api/admin/events/${event._id}`);
+      const res = await authFetch(`/api/admin/events/${event._id}`);
       const data = await res.json();
-      if (data.registeredUsers) {
-        setAttendanceEventDetails({ registeredUsers: data.registeredUsers });
-      }
+      setAttendanceEventDetails({
+        attendances: data.attendances || [],
+        registeredUsers: data.registeredUsers || [],
+        totalMembers: data.totalMembers || (data.registeredUsers ? data.registeredUsers.length : 0),
+        totalGuests: data.totalGuests || 0,
+        totalHeadcount: data.totalHeadcount || (data.registeredUsers ? data.registeredUsers.length : 0),
+        presentCount: data.presentCount || 0,
+        absentCount: data.absentCount || 0,
+        registeredCount: data.registeredCount || (data.registeredUsers ? data.registeredUsers.length : 0)
+      });
     } catch (err) {
       console.error('Failed to fetch attendance details', err);
+      setAttendanceEventDetails({
+        attendances: [],
+        registeredUsers: [],
+        totalMembers: 0,
+        totalGuests: 0,
+        totalHeadcount: 0,
+        presentCount: 0,
+        absentCount: 0,
+        registeredCount: 0
+      });
+    }
+  };
+
+  const handleUpdateAttendanceStatus = async (userId: string, status: 'Registered' | 'Present' | 'Absent') => {
+    if (!attendanceSelectedEvent || !attendanceEventDetails) return;
+
+    // Optimistic UI Update (0ms delay)
+    const updatedAttendances = (attendanceEventDetails.attendances || []).map((att: any) => {
+      if (att.userId?._id === userId || att.userId === userId) {
+        return { ...att, status };
+      }
+      return att;
+    });
+
+    const presentCount = updatedAttendances.filter((a: any) => a.status === 'Present').length;
+    const absentCount = updatedAttendances.filter((a: any) => a.status === 'Absent').length;
+    const registeredCount = updatedAttendances.filter((a: any) => !a.status || a.status === 'Registered').length;
+
+    setAttendanceEventDetails(prev => prev ? {
+      ...prev,
+      attendances: updatedAttendances,
+      presentCount,
+      absentCount,
+      registeredCount
+    } : null);
+
+    try {
+      const res = await fetch(`/api/admin/events/${attendanceSelectedEvent._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, status }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAttendanceEventDetails({
+          attendances: data.attendances || [],
+          registeredUsers: data.registeredUsers || [],
+          totalMembers: data.totalMembers || 0,
+          totalGuests: data.totalGuests || 0,
+          totalHeadcount: data.totalHeadcount || 0,
+          presentCount: data.presentCount || 0,
+          absentCount: data.absentCount || 0,
+          registeredCount: data.registeredCount || 0
+        });
+      }
+    } catch (err) {
+      console.error('Failed to update attendance status', err);
+    }
+  };
+
+  const handleRegisterMemberToCurrentEvent = async (userId: string, count: number = 0, guestNames: string = '') => {
+    if (!attendanceSelectedEvent) return;
+    setRegSubmittingUserId(userId);
+
+    try {
+      const res = await fetch(`/api/admin/events/${attendanceSelectedEvent._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId,
+          additionalCount: count,
+          guestNames,
+          status: 'Registered'
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAttendanceEventDetails({
+          attendances: data.attendances || [],
+          registeredUsers: data.registeredUsers || [],
+          totalMembers: data.totalMembers || 0,
+          totalGuests: data.totalGuests || 0,
+          totalHeadcount: data.totalHeadcount || 0,
+          presentCount: data.presentCount || 0,
+          absentCount: data.absentCount || 0,
+          registeredCount: data.registeredCount || 0
+        });
+      }
+    } catch (err) {
+      console.error('Failed to register member to event', err);
+    } finally {
+      setRegSubmittingUserId(null);
+    }
+  };
+
+  const handleRemoveMemberFromCurrentEvent = async (userId: string) => {
+    if (!attendanceSelectedEvent) return;
+    setRegSubmittingUserId(userId);
+
+    try {
+      const res = await fetch(`/api/admin/events/${attendanceSelectedEvent._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: 'delete' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAttendanceEventDetails({
+          attendances: data.attendances || [],
+          registeredUsers: data.registeredUsers || [],
+          totalMembers: data.totalMembers || 0,
+          totalGuests: data.totalGuests || 0,
+          totalHeadcount: data.totalHeadcount || 0,
+          presentCount: data.presentCount || 0,
+          absentCount: data.absentCount || 0,
+          registeredCount: data.registeredCount || 0
+        });
+      }
+    } catch (err) {
+      console.error('Failed to remove member from event', err);
+    } finally {
+      setRegSubmittingUserId(null);
+    }
+  };
+
+  const handleOpenUserRegEventModal = (user: any) => {
+    setSelectedUser(user);
+    setUserRegAdditionalCount(0);
+    setUserRegGuestNames('');
+    setUserRegError('');
+    const upcomingEvents = events.filter(e => isEventUpcoming(e.date));
+    setUserRegSelectedEventId(upcomingEvents.length > 0 ? upcomingEvents[0]._id : (events.length > 0 ? events[0]._id : ''));
+    setIsUserRegEventModalOpen(true);
+  };
+
+  const handleUserRegEventSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser || !userRegSelectedEventId) return;
+    setIsUserRegSubmitting(true);
+    setUserRegError('');
+
+    try {
+      const res = await fetch(`/api/admin/events/${userRegSelectedEventId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: selectedUser._id,
+          additionalCount: Number(userRegAdditionalCount),
+          guestNames: userRegGuestNames.trim(),
+          status: 'Registered'
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to register member to event');
+      }
+      await handleSelectUser(selectedUser);
+      setIsUserRegEventModalOpen(false);
+    } catch (err: any) {
+      setUserRegError(err.message);
+    } finally {
+      setIsUserRegSubmitting(false);
     }
   };
 
   const exportAttendance = () => {
-    if (!attendanceEventDetails || !attendanceEventDetails.registeredUsers) return;
-    const usersList = attendanceEventDetails.registeredUsers;
-    if (usersList.length === 0) {
+    if (!attendanceEventDetails) return;
+    const attList = attendanceEventDetails.attendances || [];
+    const legacyList = attendanceEventDetails.registeredUsers || [];
+
+    if (attList.length === 0 && legacyList.length === 0) {
       alert("No attendance records to export.");
       return;
     }
 
-    // 1. Prepare Title and Header data
     const eventName = attendanceSelectedEvent?.eventName || 'Event';
     const eventDate = attendanceSelectedEvent?.date || '';
     const eventTime = attendanceSelectedEvent?.time || '';
     const location = attendanceSelectedEvent?.locationAddress || '';
 
-    // Create an array of arrays for the exact layout we want
-    const sheetData = [
+    const sheetData: (string | number)[][] = [
       [`ATTENDANCE REPORT: ${eventName.toUpperCase()}`],
       [`Date: ${eventDate}   |   Time: ${eventTime}`],
       [`Location: ${location}`],
-      [], // Blank row for spacing
-      ['S.No', 'Full Name', 'Contact Number'], // Table Headers
+      [`Total Registered Members: ${attendanceEventDetails.totalMembers || legacyList.length}   |   Total Guests: ${attendanceEventDetails.totalGuests || 0}`],
+      [`TOTAL HEADCOUNT: ${attendanceEventDetails.totalHeadcount || legacyList.length}   |   Present: ${attendanceEventDetails.presentCount || 0}   |   Absent: ${attendanceEventDetails.absentCount || 0}`],
+      [], 
+      ['S.No', 'Member Name', 'Contact Number', 'Fellowship Category', 'Additional Guests (+)', 'Guest Names / Notes', 'Party Size', 'Attendance Status'], 
     ];
 
-    // Append actual user data rows
-    usersList.forEach((u, i) => {
-      sheetData.push([i + 1, u.name, u.contactNumber]);
-    });
+    if (attList.length > 0) {
+      attList.forEach((att: any, i: number) => {
+        const memberName = att.userId?.name || 'Member';
+        const phone = att.userId?.contactNumber || 'no number';
+        const cat = att.userId?.category || 'General';
+        const addCount = att.additionalCount || 0;
+        const gNames = att.guestNames || 'None';
+        const partySize = 1 + addCount;
+        const attStatus = att.status || 'Registered';
 
-    // 2. Convert to worksheet
+        sheetData.push([i + 1, memberName, phone, cat, addCount, gNames, partySize, attStatus]);
+      });
+    } else {
+      legacyList.forEach((u: any, i: number) => {
+        sheetData.push([i + 1, u.name, u.contactNumber, u.category || 'General', 0, 'None', 1, 'Registered']);
+      });
+    }
+
+    sheetData.push([]);
+    sheetData.push([
+      'SUMMARY',
+      `Members: ${attendanceEventDetails.totalMembers || legacyList.length}`,
+      `Guests: ${attendanceEventDetails.totalGuests || 0}`,
+      `Present: ${attendanceEventDetails.presentCount || 0}`,
+      `Absent: ${attendanceEventDetails.absentCount || 0}`,
+      'TOTAL HEADCOUNT:',
+      attendanceEventDetails.totalHeadcount || legacyList.length
+    ]);
+
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-    // 3. Set professional column widths
     ws['!cols'] = [
-      { wch: 10 }, // A: S.No (wider than default)
-      { wch: 35 }, // B: Name (plenty of room for long names)
-      { wch: 25 }  // C: Contact Number
+      { wch: 8 },  // S.No
+      { wch: 30 }, // Member Name
+      { wch: 20 }, // Contact Number
+      { wch: 18 }, // Category
+      { wch: 20 }, // Additional Guests
+      { wch: 28 }, // Guest Names
+      { wch: 14 }, // Party Size
+      { wch: 18 }  // Status
     ];
 
-    // 4. Export
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, `${eventName}_Attendance.xlsx`);
+    XLSX.writeFile(wb, `${eventName}_Attendance_Report.xlsx`);
   };
 
   const handleAddEventSubmit = async (e: React.FormEvent) => {
@@ -553,7 +907,7 @@ export default function AdminDashboard() {
 
     try {
       const formattedTime = `${newEventHour}:${newEventMinute} ${newEventAmPm}`;
-      const res = await fetch('/api/admin/events', {
+      const res = await authFetch('/api/admin/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -562,7 +916,8 @@ export default function AdminDashboard() {
           time: formattedTime, 
           locationAddress: newEventLocation, 
           gmapLink: newEventGmapLink,
-          travelCost: newEventCost 
+          travelCost: newEventCost,
+          organizerPhone: newEventOrganizerPhone
         }),
       });
 
@@ -582,6 +937,7 @@ export default function AdminDashboard() {
       setNewEventLocation('');
       setNewEventGmapLink('');
       setNewEventCost('');
+      setNewEventOrganizerPhone('');
     } catch (err: any) {
       setEventModalError(err.message);
     } finally {
@@ -592,7 +948,7 @@ export default function AdminDashboard() {
   const handleDeleteEvent = async (eventId: string) => {
     if (!window.confirm('Are you sure you want to delete this event? This will also delete all registrations for it.')) return;
     try {
-      const res = await fetch(`/api/admin/events/${eventId}`, { method: 'DELETE' });
+      const res = await authFetch(`/api/admin/events/${eventId}`, { method: 'DELETE' });
       if (res.ok) {
         setEvents(events.filter(e => e._id !== eventId));
         setSelectedEvent(null);
@@ -639,6 +995,7 @@ export default function AdminDashboard() {
     setEditEventLocation(event.locationAddress);
     setEditEventGmapLink(event.gmapLink || '');
     setEditEventCost(event.travelCost);
+    setEditEventOrganizerPhone(event.organizerPhone || '');
     setIsEditEventModalOpen(true);
   };
 
@@ -649,7 +1006,7 @@ export default function AdminDashboard() {
 
     try {
       const formattedTime = `${editEventHour}:${editEventMinute} ${editEventAmPm}`;
-      const res = await fetch(`/api/admin/events/${editEventId}`, {
+      const res = await authFetch(`/api/admin/events/${editEventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -658,7 +1015,8 @@ export default function AdminDashboard() {
           time: formattedTime, 
           locationAddress: editEventLocation, 
           gmapLink: editEventGmapLink,
-          travelCost: editEventCost 
+          travelCost: editEventCost,
+          organizerPhone: editEventOrganizerPhone
         }),
       });
 
@@ -679,7 +1037,100 @@ export default function AdminDashboard() {
   };
 
   const activeEvents = events.filter(e => isEventUpcoming(e.date));
-  const displayedEvents = (selectedCalendarDate ? activeEvents.filter(e => e.date === selectedCalendarDate) : activeEvents);
+
+  // Category counts map
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    users.forEach(u => {
+      const cat = u.category || 'General';
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [users]);
+
+  // Broadcast text generator
+  const getBroadcastMessageText = useCallback(() => {
+    const ev = attendanceSelectedEvent || selectedEvent;
+    if (!ev) return '';
+    const formattedDate = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const timeStr = formatTimeWithAmPm(ev.time);
+
+    if (broadcastType === 'announcement') {
+      return `⛪ *UPCOMING EVENT: ${ev.eventName.toUpperCase()}*\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${timeStr}\n📍 *Location:* ${ev.locationAddress}${ev.gmapLink ? `\n🗺️ *Map:* ${ev.gmapLink}` : ''}${ev.travelCost ? `\n💵 *Cost:* ₹${ev.travelCost}` : ''}\n\n👉 *Click here to confirm attendance:*\n${typeof window !== 'undefined' ? window.location.origin : ''}/home/events/${ev._id}`;
+    } else {
+      return `🔔 *EVENT REMINDER: ${ev.eventName.toUpperCase()}*\n\nDear Member,\nThis is a friendly reminder for our upcoming event:\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${timeStr}\n📍 *Location:* ${ev.locationAddress}\n\nWe look forward to seeing you there! 🙏`;
+    }
+  }, [attendanceSelectedEvent, selectedEvent, broadcastType]);
+
+  const handleCopyBroadcastMessage = () => {
+    const text = getBroadcastMessageText();
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setBroadcastCopied(true);
+    setTimeout(() => setBroadcastCopied(false), 2500);
+  };
+
+  const handleShareWhatsAppBroadcast = () => {
+    const text = getBroadcastMessageText();
+    if (!text) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleMarkAllPresent = async () => {
+    if (!attendanceSelectedEvent || !attendanceEventDetails?.attendances) return;
+    const unconfirmed = attendanceEventDetails.attendances.filter(a => (!a.status || a.status === 'Registered'));
+    if (unconfirmed.length === 0) {
+      alert('All registered members are already marked Present!');
+      return;
+    }
+    if (!window.confirm(`Mark all ${unconfirmed.length} registered member(s) as Present?`)) return;
+
+    try {
+      for (const att of unconfirmed) {
+        const uId = att.userId?._id || att.userId;
+        if (uId) {
+          await fetch(`/api/admin/events/${attendanceSelectedEvent._id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: uId, status: 'Present' }),
+          });
+        }
+      }
+      handleSelectAttendanceEvent(attendanceSelectedEvent);
+    } catch (err) {
+      console.error('Failed to mark all present', err);
+    }
+  };
+
+  // Memoized user search & category filtering
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesSearch = userSearchQuery.trim() === '' || 
+        user.name?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+        user.contactNumber?.includes(userSearchQuery);
+      
+      const matchesCategory = selectedCategoryFilter === 'All' || 
+        (user.category || 'General') === selectedCategoryFilter;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [users, userSearchQuery, selectedCategoryFilter]);
+
+  const getCategoryBadgeStyle = (cat?: string) => {
+    if (!cat) return { bg: 'rgba(255, 255, 255, 0.08)', color: '#a1a1aa', border: 'rgba(255, 255, 255, 0.12)' };
+    
+    let hash = 0;
+    for (let i = 0; i < cat.length; i++) {
+      hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return {
+      bg: `hsla(${hue}, 70%, 55%, 0.18)`,
+      color: `hsl(${hue}, 85%, 75%)`,
+      border: `hsla(${hue}, 70%, 55%, 0.4)`
+    };
+  };
+
   return (
     <div className={styles.container}>
 
@@ -687,7 +1138,6 @@ export default function AdminDashboard() {
       <div className={styles.bgScene}>
         <div ref={bgRef} className={styles.bgImage} />
         <div className={styles.bgOverlay} />
-        {/* Floating ambient orbs */}
         <div className={styles.orb1} />
         <div className={styles.orb2} />
         <div className={styles.orb3} />
@@ -705,13 +1155,13 @@ export default function AdminDashboard() {
             className={`${styles.tab} ${activeTab === 'addUser' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('addUser')}
           >
-            Add User
+            Users ({users.length})
           </button>
           <button 
             className={`${styles.tab} ${activeTab === 'createEvent' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('createEvent')}
           >
-            Create Event
+            Events ({events.length})
           </button>
           <button 
             className={`${styles.tab} ${activeTab === 'attendance' ? styles.activeTab : ''}`}
@@ -732,7 +1182,6 @@ export default function AdminDashboard() {
 
           {isProfileOpen && (
             <>
-              {/* Backdrop to close on outside click */}
               <div 
                 style={{ position: 'fixed', inset: 0, zIndex: 99 }} 
                 onClick={() => setIsProfileOpen(false)} 
@@ -748,14 +1197,19 @@ export default function AdminDashboard() {
 
                 <div className={styles.profileDropdownDivider} />
 
-                <a href="/" className={styles.profileDropdownItem}>
+                <button 
+                  type="button"
+                  className={styles.profileDropdownItem}
+                  onClick={handleAdminLogout}
+                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+                >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16 17 21 12 16 7"/>
                     <line x1="21" y1="12" x2="9" y2="12"/>
                   </svg>
                   Logout
-                </a>
+                </button>
               </div>
             </>
           )}
@@ -765,13 +1219,16 @@ export default function AdminDashboard() {
       {/* Main Content Area */}
       <main className={styles.mainContent}>
         
-        {/* ADD USER SECTION */}
+        {/* USER MANAGEMENT SECTION */}
         {activeTab === 'addUser' && (
           <div className={styles.sectionContent} key="addUser">
             
             <div className={`${styles.sectionHeader} ${styles.pageHeader}`}>
               <h2 className={styles.sectionTitle}>User Management</h2>
-              <div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button className={styles.btnImport} onClick={() => setIsCategoryModalOpen(true)}>
+                  ⚙️ Categories
+                </button>
                 <button className={styles.btnImport} onClick={() => setIsImportModalOpen(true)}>
                   Import
                 </button>
@@ -781,23 +1238,90 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            {/* Search Bar & Category Filter Bar */}
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+              <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="🔍 Search members by name or phone..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    background: 'rgba(0,0,0,0.4)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#fff',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto', maxWidth: '100%' }}>
+                {['All', ...categories.map(c => c.name)].map((cat) => {
+                  const count = cat === 'All' ? users.length : (categoryCounts[cat] || 0);
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategoryFilter(cat)}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        background: selectedCategoryFilter === cat ? 'var(--crimson)' : 'transparent',
+                        color: selectedCategoryFilter === cat ? '#fff' : '#888',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {cat} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className={styles.usersLayout}>
               {/* Left Column: Users List */}
               <div className={styles.usersSidebar}>
-                <div className={styles.sidebarTitle}>Registered Users</div>
-                {users.length === 0 ? (
-                  <div className={styles.noUsers}>No users found.</div>
+                <div className={styles.sidebarTitle}>
+                  Members ({filteredUsers.length} of {users.length})
+                </div>
+                {filteredUsers.length === 0 ? (
+                  <div className={styles.noUsers}>No matching members found.</div>
                 ) : (
-                  users.map(user => (
-                    <div 
-                      key={user._id} 
-                      className={`${styles.userListItem} ${selectedUser?._id === user._id ? styles.activeUser : ''}`}
-                      onClick={() => handleSelectUser(user)}
-                    >
-                      <span className={styles.userName}>{user.name}</span>
-                      <span className={styles.userPhone}>{user.contactNumber}</span>
-                    </div>
-                  ))
+                  filteredUsers.map(user => {
+                    const badge = getCategoryBadgeStyle(user.category);
+                    return (
+                      <div 
+                        key={user._id} 
+                        className={`${styles.userListItem} ${selectedUser?._id === user._id ? styles.activeUser : ''}`}
+                        onClick={() => handleSelectUser(user)}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                          <span className={styles.userName}>{user.name}</span>
+                          <span style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '10px',
+                            background: badge.bg,
+                            color: badge.color,
+                            border: `1px solid ${badge.border}`
+                          }}>
+                            {user.category || 'General'}
+                          </span>
+                        </div>
+                        <span className={styles.userPhone}>📞 {user.contactNumber}</span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
 
@@ -809,25 +1333,52 @@ export default function AdminDashboard() {
                   <>
                     <div className={styles.detailsHeader}>
                       <div className={styles.detailsTitleArea}>
-                        <h3 className={styles.detailsTitle}>{selectedUser.name}</h3>
-                        <a href={`tel:${selectedUser.contactNumber}`} className={styles.detailsPhone} style={{ textDecoration: 'none' }}>{selectedUser.contactNumber}</a>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <h3 className={styles.detailsTitle}>{selectedUser.name}</h3>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            padding: '2px 10px',
+                            borderRadius: '12px',
+                            background: getCategoryBadgeStyle(selectedUser.category).bg,
+                            color: getCategoryBadgeStyle(selectedUser.category).color,
+                            border: `1px solid ${getCategoryBadgeStyle(selectedUser.category).border}`
+                          }}>
+                            {selectedUser.category || 'General'}
+                          </span>
+                        </div>
+                        <a href={`tel:${selectedUser.contactNumber}`} className={styles.detailsPhone} style={{ textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
+                          📞 {selectedUser.contactNumber}
+                        </a>
                       </div>
-                      <button 
-                        className={styles.btnDelete}
-                        onClick={() => handleDeleteUser(selectedUser._id)}
-                      >
-                        Delete User
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button 
+                          className={styles.btnAddUser}
+                          onClick={() => handleOpenUserRegEventModal(selectedUser)}
+                          style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          + Register to Event
+                        </button>
+                        <button 
+                          className={styles.btnEdit}
+                          onClick={() => handleOpenEditUser(selectedUser)}
+                        >
+                          Edit Details
+                        </button>
+                        <button 
+                          className={styles.btnDelete}
+                          onClick={() => handleDeleteUser(selectedUser._id)}
+                        >
+                          Delete Member
+                        </button>
+                      </div>
                     </div>
 
                     <div className={styles.eventsGrid}>
                       <div>
                         <h4 className={styles.eventsSectionTitle}>Upcoming Events</h4>
                         {!userDetails ? (
-                          <div className={styles.noEvents} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid var(--crimson)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></span>
-                            Loading...
-                          </div>
+                          <div className={styles.noEvents}>Loading...</div>
                         ) : userDetails.upcoming.length === 0 ? (
                           <div className={styles.noEvents}>No upcoming registrations.</div>
                         ) : (
@@ -835,27 +1386,6 @@ export default function AdminDashboard() {
                             <div key={ev._id} className={styles.eventCard}>
                               <h4 style={{ margin: '0 0 0.25rem' }}>{ev.eventName}</h4>
                               <p style={{ margin: 0, color: 'var(--crimson)', fontSize: '0.85rem' }}>{ev.date} &bull; {ev.time}</p>
-                              {ev.locationAddress && <p style={{ margin: '0.2rem 0 0', color: '#666', fontSize: '0.78rem' }}>{ev.locationAddress}</p>}
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      <div>
-                        <h4 className={styles.eventsSectionTitle}>History</h4>
-                        {!userDetails ? (
-                          <div className={styles.noEvents} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid var(--crimson)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></span>
-                            Loading...
-                          </div>
-                        ) : userDetails.history.length === 0 ? (
-                          <div className={styles.noEvents}>No past events attended.</div>
-                        ) : (
-                          userDetails.history.map(ev => (
-                            <div key={ev._id} className={styles.eventCard} style={{ opacity: 0.7 }}>
-                              <h4 style={{ margin: '0 0 0.25rem' }}>{ev.eventName}</h4>
-                              <p style={{ margin: 0, fontSize: '0.85rem', color: '#888' }}>{ev.date} &bull; {ev.time}</p>
-                              {ev.locationAddress && <p style={{ margin: '0.2rem 0 0', color: '#555', fontSize: '0.78rem' }}>{ev.locationAddress}</p>}
                             </div>
                           ))
                         )}
@@ -866,13 +1396,12 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Add User Modal */}
+            {/* ADD USER MODAL */}
             {isModalOpen && (
-              <div className={styles.modalOverlay}>
-                <div className={styles.modalContent}>
-                  <h3 className={styles.modalTitle}>Add New User</h3>
-                  {modalError && <div style={{ color: 'var(--crimson)', marginBottom: '1rem', fontSize: '0.9rem' }}>{modalError}</div>}
-                  
+              <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <h3 className={styles.modalTitle}>Add New Member</h3>
+                  {modalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{modalError}</div>}
                   <form onSubmit={handleAddUserSubmit}>
                     <div className={styles.formGroup}>
                       <label>Full Name</label>
@@ -880,55 +1409,133 @@ export default function AdminDashboard() {
                         type="text" 
                         value={newUserName} 
                         onChange={e => setNewUserName(e.target.value)} 
+                        placeholder="e.g. John Doe"
                         required 
-                        placeholder="John Doe"
                       />
                     </div>
                     <div className={styles.formGroup}>
-                      <label>Contact Number</label>
+                      <label>10-Digit Contact Number</label>
                       <input 
                         type="tel" 
+                        maxLength={10}
                         value={newUserPhone} 
                         onChange={e => setNewUserPhone(e.target.value)} 
+                        placeholder="e.g. 9876543210"
                         required 
-                        maxLength={10}
-                        placeholder="10-digit number"
                       />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Category</label>
+                      <input 
+                        type="text" 
+                        list="add-category-list" 
+                        value={newUserCategory} 
+                        onChange={e => setNewUserCategory(e.target.value)}
+                        placeholder="Select or type custom category..."
+                        style={{
+                          background: '#000',
+                          border: '1px solid #333',
+                          padding: '0.8rem',
+                          borderRadius: '6px',
+                          color: '#fff',
+                          width: '100%'
+                        }}
+                      />
+                      <datalist id="add-category-list">
+                        {categories.map(c => (
+                          <option key={c._id} value={c.name} />
+                        ))}
+                      </datalist>
                     </div>
                     <div className={styles.modalActions}>
                       <button type="button" className={styles.btnSecondary} onClick={() => setIsModalOpen(false)}>Cancel</button>
                       <button type="submit" className={styles.btnPrimary} disabled={isSubmitting}>
-                        {isSubmitting ? 'Adding...' : 'Add User'}
+                        {isSubmitting ? 'Creating...' : 'Create Member'}
                       </button>
                     </div>
                   </form>
                 </div>
               </div>
             )}
-            
-            {/* Import Users Modal */}
-            {isImportModalOpen && (
-              <div className={styles.modalOverlay}>
-                <div className={styles.modalContent}>
-                  <h3 className={styles.modalTitle}>Import Users (Excel)</h3>
-                  <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                    Upload an .xlsx or .csv file. The app will automatically detect columns containing names and 10-digit phone numbers.
-                  </p>
-                  {importError && <div style={{ color: 'var(--crimson)', marginBottom: '1rem', fontSize: '0.9rem' }}>{importError}</div>}
-                  
-                  <form onSubmit={handleImportSubmit}>
+
+            {/* EDIT USER MODAL */}
+            {isEditUserModalOpen && (
+              <div className={styles.modalOverlay} onClick={() => setIsEditUserModalOpen(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <h3 className={styles.modalTitle}>Edit Member Details</h3>
+                  {modalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{modalError}</div>}
+                  <form onSubmit={handleEditUserSubmit}>
                     <div className={styles.formGroup}>
+                      <label>Full Name</label>
                       <input 
-                        type="file" 
-                        accept=".xlsx, .xls, .csv" 
-                        onChange={(e) => setImportFile(e.target.files ? e.target.files[0] : null)}
-                        required
-                        style={{ border: 'none', padding: 0 }}
+                        type="text" 
+                        value={editUserName} 
+                        onChange={e => setEditUserName(e.target.value)} 
+                        required 
                       />
                     </div>
-                    
+                    <div className={styles.formGroup}>
+                      <label>10-Digit Contact Number</label>
+                      <input 
+                        type="tel" 
+                        maxLength={10}
+                        value={editUserPhone} 
+                        onChange={e => setEditUserPhone(e.target.value)} 
+                        required 
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Category</label>
+                      <input 
+                        type="text" 
+                        list="edit-category-list" 
+                        value={editUserCategory} 
+                        onChange={e => setEditUserCategory(e.target.value)}
+                        placeholder="Select or type custom category..."
+                        style={{
+                          background: '#000',
+                          border: '1px solid #333',
+                          padding: '0.8rem',
+                          borderRadius: '6px',
+                          color: '#fff',
+                          width: '100%'
+                        }}
+                      />
+                      <datalist id="edit-category-list">
+                        {categories.map(c => (
+                          <option key={c._id} value={c.name} />
+                        ))}
+                      </datalist>
+                    </div>
                     <div className={styles.modalActions}>
-                      <button type="button" className={styles.btnSecondary} onClick={() => { setIsImportModalOpen(false); setImportFile(null); setImportError(''); }}>Cancel</button>
+                      <button type="button" className={styles.btnSecondary} onClick={() => setIsEditUserModalOpen(false)}>Cancel</button>
+                      <button type="submit" className={styles.btnPrimary} disabled={isSubmitting}>
+                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* IMPORT MODAL */}
+            {isImportModalOpen && (
+              <div className={styles.modalOverlay} onClick={() => setIsImportModalOpen(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <h3 className={styles.modalTitle}>Import Members (Excel)</h3>
+                  {importError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{importError}</div>}
+                  <form onSubmit={handleImportSubmit}>
+                    <div className={styles.formGroup}>
+                      <label>Select .xlsx / .xls file</label>
+                      <input 
+                        type="file" 
+                        accept=".xlsx, .xls"
+                        onChange={e => setImportFile(e.target.files?.[0] || null)}
+                        required 
+                      />
+                    </div>
+                    <div className={styles.modalActions}>
+                      <button type="button" className={styles.btnSecondary} onClick={() => setIsImportModalOpen(false)}>Cancel</button>
                       <button type="submit" className={styles.btnPrimary} disabled={isImporting || !importFile}>
                         {isImporting ? 'Importing...' : 'Upload & Import'}
                       </button>
@@ -937,541 +1544,92 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
-
           </div>
         )}
-        
+
         {/* CREATE EVENT SECTION */}
         {activeTab === 'createEvent' && (
           <div className={styles.sectionContent} key="createEvent">
             <div className={`${styles.sectionHeader} ${styles.pageHeader}`}>
               <h2 className={styles.sectionTitle}>Event Management</h2>
               <button className={styles.btnAddUser} onClick={handleAddEventClick}>
-                + Add Event
+                + Create Event
               </button>
             </div>
 
-            <div className={styles.usersLayout}>
-              {/* Left Column: Events List */}
-              <div className={styles.eventSidebar}>
-                
-                {/* VIEW TOGGLE */}
-                <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '8px', padding: '4px', marginBottom: '1rem' }}>
-                  <button 
-                    onClick={() => setEventViewMode('calendar')}
-                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: 'none', background: eventViewMode === 'calendar' ? 'var(--crimson)' : 'transparent', color: '#fff', cursor: 'pointer', transition: 'background 0.2s' }}
-                  >
-                    Calendar
-                  </button>
-                  <button 
-                    onClick={() => setEventViewMode('timeline')}
-                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: 'none', background: eventViewMode === 'timeline' ? 'var(--crimson)' : 'transparent', color: '#fff', cursor: 'pointer', transition: 'background 0.2s' }}
-                  >
-                    Timeline
-                  </button>
+            <div className={styles.eventsGrid} style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {events.map(event => (
+                <div key={event._id} className={styles.eventCard} style={{ cursor: 'pointer' }} onClick={() => handleOpenEditEvent(event)}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{event.eventName}</h4>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: isEventUpcoming(event.date) ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)', color: isEventUpcoming(event.date) ? 'var(--crimson)' : '#888' }}>
+                      {isEventUpcoming(event.date) ? 'UPCOMING' : 'PAST'}
+                    </span>
+                  </div>
+                  <p style={{ margin: '0.5rem 0 0', color: 'var(--crimson)', fontSize: '0.9rem', fontWeight: 600 }}>
+                    📅 {event.date} &bull; ⏰ {formatTimeWithAmPm(event.time)}
+                  </p>
+                  <p style={{ margin: '0.25rem 0 0', color: '#888', fontSize: '0.85rem' }}>
+                    📍 {event.locationAddress}
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                    <button className={styles.btnEdit} onClick={(e) => { e.stopPropagation(); handleOpenEditEvent(event); }}>Edit</button>
+                    <button className={styles.btnDelete} onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event._id); }}>Delete</button>
+                  </div>
                 </div>
-
-                {eventViewMode === 'calendar' ? (
-                  <div className={styles.calendarCard}>
-                    {/* CALENDAR CARD */}
-                    <div className={styles.calendarHeader}>
-                      <button className={styles.calendarNavBtn} onClick={handlePrevMonth}>&lt;</button>
-                      <h4>{new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
-                      <button className={styles.calendarNavBtn} onClick={handleNextMonth}>&gt;</button>
-                    </div>
-                    <div className={styles.calendarGrid}>
-                      {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                        <div key={day} className={styles.calendarDayName}>{day}</div>
-                      ))}
-                      {Array.from({ length: getFirstDayOfMonth(currentMonth, currentYear) }).map((_, i) => (
-                        <div key={`empty-${i}`} className={`${styles.calendarDate} ${styles.emptyDate}`}></div>
-                      ))}
-                      {Array.from({ length: getDaysInMonth(currentMonth, currentYear) }).map((_, i) => {
-                        const day = i + 1;
-                        const formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const hasEvent = events.some(e => e.date === formattedDate);
-                        const isActive = selectedCalendarDate === formattedDate;
-                        return (
-                          <div 
-                            key={day} 
-                            className={`${styles.calendarDate} ${isActive ? styles.activeDate : ''} ${hasEvent ? styles.hasEvent : ''}`}
-                            onClick={() => handleDateClick(day)}
-                          >
-                            {day}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {selectedCalendarDate && selectedCalendarDate !== todayStr && (
-                      <button className={styles.calendarClearBtn} onClick={() => setSelectedCalendarDate(todayStr)}>
-                        Back to Today
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className={styles.calendarCard} style={{ maxHeight: '420px', overflowY: 'auto', padding: '1rem' }}>
-                    {/* TIMELINE VIEW */}
-                    {activeEvents.length === 0 ? (
-                      <div style={{ color: '#888', textAlign: 'center', padding: '2rem 0' }}>No upcoming events</div>
-                    ) : (
-                      [...activeEvents]
-                        .sort((a, b) => new Date(a.date + 'T' + a.time).getTime() - new Date(b.date + 'T' + b.time).getTime())
-                        .map(event => {
-                          const isSelected = selectedEvent?._id === event._id;
-                          return (
-                            <div 
-                              key={event._id}
-                              onClick={() => handleSelectEvent(event)}
-                              style={{ 
-                                display: 'flex', 
-                                gap: '1rem', 
-                                marginBottom: '0.75rem', 
-                                padding: '0.75rem 1rem', 
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                background: isSelected ? 'rgba(220, 20, 60, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                                border: isSelected ? '1px solid var(--crimson)' : '1px solid rgba(255, 255, 255, 0.05)',
-                                transition: 'all 0.2s ease',
-                              }}
-                            >
-                              <div style={{ minWidth: '85px', color: 'var(--crimson)', fontSize: '0.9rem' }}>
-                                <div style={{ fontWeight: 'bold' }}>{new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                                <div>{formatTimeWithAmPm(event.time)}</div>
-                              </div>
-                              <div>
-                                <div style={{ fontWeight: 600, color: '#fff' }}>{event.eventName}</div>
-                                {event.locationAddress && <div style={{ color: '#888', fontSize: '0.8rem', marginTop: '4px' }}>{event.locationAddress}</div>}
-                              </div>
-                            </div>
-                          );
-                        })
-                    )}
-                  </div>
-                )}
-
-                <div className={styles.sidebarTitle}>Created Events</div>
-                {displayedEvents.length === 0 ? (
-                  <div className={styles.noUsers}>No events found.</div>
-                ) : (
-                  displayedEvents.map(event => {
-                    const upcoming = isEventUpcoming(event.date);
-                    return (
-                      <div 
-                        key={event._id} 
-                        className={`${styles.userListItem} ${selectedEvent?._id === event._id ? styles.activeUser : ''}`}
-                        onClick={() => handleSelectEvent(event)}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                          <span className={styles.userName}>{event.eventName}</span>
-                          <span style={{
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            background: upcoming ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)',
-                            color: upcoming ? 'var(--crimson)' : '#888',
-                            border: upcoming ? '1px solid rgba(220,20,60,0.4)' : '1px solid rgba(255,255,255,0.1)'
-                          }}>
-                            {upcoming ? 'UPCOMING' : 'PAST'}
-                          </span>
-                        </div>
-                        <span className={styles.userPhone}>{event.date} - {formatTimeWithAmPm(event.time)}</span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Middle Column: Event Details */}
-              <div className={`${styles.userDetailsArea} ${styles.userDetailsAreaDesktop}`}>
-                {!selectedEvent ? (
-                  <div className={styles.emptyState}>Select an event from the left to view its details.</div>
-                ) : (
-                  <>
-                    <div className={styles.detailsHeader}>
-                      <div className={styles.detailsTitleArea}>
-                        <h3 className={styles.detailsTitle}>{selectedEvent.eventName}</h3>
-                        <div className={styles.detailsPhone}>{selectedEvent.date} | {formatTimeWithAmPm(selectedEvent.time)}</div>
-                        <div style={{color: '#888', marginTop: '0.5rem'}}>Estimated Travel Cost: ₹{selectedEvent.travelCost}</div>
-                      </div>
-                      <div style={{ display: 'flex' }}>
-                        <button 
-                          className={styles.btnEdit}
-                          onClick={() => handleOpenEditEvent(selectedEvent)}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className={styles.btnDelete}
-                          onClick={() => handleDeleteEvent(selectedEvent._id)}
-                        >
-                          Delete Event
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className={styles.eventsGrid}>
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <h4 className={styles.eventsSectionTitle}>Location</h4>
-                        <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '1rem' }}>{selectedEvent.locationAddress}</p>
-                        
-                        <div className={styles.mapContainer}>
-                          <iframe
-                            loading="lazy"
-                            allowFullScreen
-                            referrerPolicy="no-referrer-when-downgrade"
-                            src={
-                              selectedEvent.gmapLink && selectedEvent.gmapLink.includes('embed') 
-                                ? selectedEvent.gmapLink.replace(/<iframe.*src="([^"]*)".*<\/iframe>/, '$1')
-                                : `https://maps.google.com/maps?q=${encodeURIComponent(selectedEvent.gmapLink || selectedEvent.locationAddress)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
-                            }
-                          ></iframe>
-                        </div>
-                      </div>
-
-                      <div style={{ gridColumn: '1 / -1', marginTop: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                          <h4 className={styles.eventsSectionTitle}>Registered Users ({eventDetails?.registeredUsers?.length || 0})</h4>
-                          <button
-                            className={styles.btnEdit}
-                            onClick={() => setIsAddUsersToEventOpen(true)}
-                          >
-                            + Add Users
-                          </button>
-                        </div>
-                        {!eventDetails ? (
-                          <div className={styles.noEvents}>Loading...</div>
-                        ) : eventDetails.registeredUsers.length === 0 ? (
-                          <div className={styles.noEvents}>No users registered yet.</div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {eventDetails.registeredUsers.map(user => (
-                              <div key={user._id} style={{ padding: '0.85rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontWeight: 600 }}>{user.name}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                  <a 
-                                    href={`tel:${user.contactNumber}`} 
-                                    style={{ color: 'var(--crimson)', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
-                                  >
-                                    📞 {user.contactNumber}
-                                  </a>
-                                  <button
-                                    onClick={() => handleRemoveUserFromEvent(user._id)}
-                                    title="Remove from event"
-                                    style={{
-                                      background: 'rgba(220,20,60,0.1)',
-                                      border: '1px solid rgba(220,20,60,0.3)',
-                                      color: 'var(--crimson)',
-                                      borderRadius: '6px',
-                                      padding: '4px 10px',
-                                      cursor: 'pointer',
-                                      fontSize: '0.78rem',
-                                      fontWeight: 600,
-                                      transition: 'all 0.2s',
-                                    }}
-                                    onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = 'var(--crimson)'; (e.target as HTMLButtonElement).style.color = '#fff'; }}
-                                    onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'rgba(220,20,60,0.1)'; (e.target as HTMLButtonElement).style.color = 'var(--crimson)'; }}
-                                  >
-                                    Remove
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              ))}
             </div>
 
-            {/* Add Users to Event Modal */}
-            {isAddUsersToEventOpen && (
-              <div className={styles.modalOverlay}>
-                <div className={styles.modalContent}>
-                  <h3 className={styles.modalTitle}>Add Users to Event</h3>
-                  {/* Only show users who are NOT yet registered */}
-                  {(() => {
-                    const unaddedUsers = users.filter(user =>
-                      !eventDetails?.registeredUsers?.some((u: any) => u._id === user._id)
-                    );
-
-                    return (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '1rem' }}>
-                          <p style={{ color: '#888', fontSize: '0.85rem', margin: 0 }}>
-                            Select users to add to <strong style={{ color: '#fff' }}>{selectedEvent?.eventName}</strong>
-                          </p>
-                          {unaddedUsers.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={handleAddAllUsersToEvent}
-                              disabled={isAddingAll}
-                              style={{
-                                background: 'rgba(220, 20, 60, 0.15)',
-                                border: '1px solid var(--crimson)',
-                                color: '#fff',
-                                padding: '0.4rem 0.85rem',
-                                borderRadius: '6px',
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                cursor: isAddingAll ? 'not-allowed' : 'pointer',
-                                opacity: isAddingAll ? 0.6 : 1,
-                                whiteSpace: 'nowrap',
-                                transition: 'all 0.2s',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                              }}
-                            >
-                              {isAddingAll ? (
-                                <>
-                                  <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                                  Adding All...
-                                </>
-                              ) : (
-                                '✓ Select All'
-                              )}
-                            </button>
-                          )}
-                        </div>
-
-                        {unaddedUsers.length === 0 ? (
-                          <div style={{ color: '#aaa', textAlign: 'center', padding: '2.5rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎉</div>
-                            <div style={{ fontWeight: 600, color: '#fff' }}>All users are already registered!</div>
-                            <div style={{ fontSize: '0.82rem', color: '#888', marginTop: '4px' }}>Every member in your database is registered for this event.</div>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '420px', overflowY: 'auto' }}>
-                            {unaddedUsers.map(user => (
-                              <div
-                                key={user._id}
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  padding: '0.9rem 1rem',
-                                  background: 'rgba(255,255,255,0.04)',
-                                  border: '1px solid rgba(255,255,255,0.08)',
-                                  borderRadius: '10px',
-                                }}
-                              >
-                                <div>
-                                  <div style={{ fontWeight: 600, color: '#fff' }}>{user.name}</div>
-                                  <a 
-                                    href={`tel:${user.contactNumber}`} 
-                                    style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'none' }}
-                                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
-                                  >
-                                    📞 {user.contactNumber}
-                                  </a>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRegisterUserToEvent(user._id)}
-                                  disabled={addingUserId === user._id}
-                                  style={{
-                                    width: '36px', height: '36px',
-                                    borderRadius: '50%',
-                                    background: 'var(--crimson)',
-                                    border: 'none',
-                                    color: '#fff',
-                                    fontSize: '1.4rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    transition: 'opacity 0.2s, transform 0.1s',
-                                    opacity: addingUserId === user._id ? 0.5 : 1,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  +
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-
-                  <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
-                    <button type="button" className={styles.btnSecondary} onClick={() => setIsAddUsersToEventOpen(false)}>Done</button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Add Event Modal */}
+            {/* CREATE EVENT MODAL */}
             {isEventModalOpen && (
-              <div className={styles.modalOverlay}>
-                <div className={styles.modalContent}>
-                  <h3 className={styles.modalTitle}>Add New Event</h3>
-                  {eventModalError && <div style={{ color: 'var(--crimson)', marginBottom: '1rem', fontSize: '0.9rem' }}>{eventModalError}</div>}
-                  
+              <div className={styles.modalOverlay} onClick={() => setIsEventModalOpen(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <h3 className={styles.modalTitle}>Create New Event</h3>
+                  {eventModalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{eventModalError}</div>}
                   <form onSubmit={handleAddEventSubmit}>
                     <div className={styles.formGroup}>
                       <label>Event Name</label>
-                      <input 
-                        type="text" 
-                        value={newEventName} 
-                        onChange={e => setNewEventName(e.target.value)} 
-                        required 
-                        placeholder="e.g. Sunday Worship Service"
-                      />
-                      {/* Suggestions based on selected day - use calendar date OR typed date */}
-                      {(() => {
-                        const dateStr = newEventDate || selectedCalendarDate || '';
-                        if (!dateStr) return null;
-                        const dayName = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
-                        const suggestions = weeklySchedule[dayName] || [];
-                        return suggestions.length > 0 ? (
-                          <div>
-                            <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.6rem', marginBottom: '0.4rem' }}>
-                              Suggestions for {dayName}:
-                            </div>
-                            <div className={styles.suggestionChips}>
-                              {suggestions.map(s => (
-                                <button
-                                  key={s}
-                                  type="button"
-                                  className={styles.suggestionChip}
-                                  onClick={() => setNewEventName(s)}
-                                >
-                                  {s}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null;
-                      })()}
+                      <input type="text" value={newEventName} onChange={e => setNewEventName(e.target.value)} required />
                     </div>
-                    
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                      <div className={styles.formGroup} style={{ flex: 1 }}>
-                        <label>
-                          Date
-                          {newEventDate && (
-                            <span style={{ color: 'var(--crimson)', marginLeft: '0.5rem', fontWeight: 400, fontSize: '0.8rem' }}>
-                              — {new Date(newEventDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' })}
-                            </span>
-                          )}
-                        </label>
-                        <input 
-                          type="date" 
-                          value={newEventDate} 
-                          onChange={e => setNewEventDate(e.target.value)} 
-                          required 
-                        />
-                      </div>
-                      <div className={styles.formGroup} style={{ flex: 1.3 }}>
-                        <label>Time</label>
-                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                          <select
-                            value={newEventHour}
-                            onChange={e => setNewEventHour(e.target.value)}
-                            style={{
-                              flex: 1,
-                              background: '#0a0a0d',
-                              border: '1px solid rgba(255, 255, 255, 0.15)',
-                              borderRadius: '6px',
-                              padding: '0.8rem 0.4rem',
-                              color: '#fff',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
-                              <option key={h} value={h} style={{ background: '#141418', color: '#fff' }}>{h}</option>
-                            ))}
-                          </select>
-
-                          <span style={{ fontWeight: 700, color: '#888', fontSize: '1.1rem' }}>:</span>
-
-                          <select
-                            value={newEventMinute}
-                            onChange={e => setNewEventMinute(e.target.value)}
-                            style={{
-                              flex: 1,
-                              background: '#0a0a0d',
-                              border: '1px solid rgba(255, 255, 255, 0.15)',
-                              borderRadius: '6px',
-                              padding: '0.8rem 0.4rem',
-                              color: '#fff',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
-                              <option key={m} value={m} style={{ background: '#141418', color: '#fff' }}>{m}</option>
-                            ))}
-                          </select>
-
-                          <select
-                            value={newEventAmPm}
-                            onChange={e => setNewEventAmPm(e.target.value as 'AM' | 'PM')}
-                            style={{
-                              flex: 1.1,
-                              background: 'var(--crimson)',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '0.8rem 0.4rem',
-                              color: '#fff',
-                              fontWeight: 700,
-                              fontSize: '0.95rem',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                            }}
-                          >
-                            <option value="AM" style={{ background: '#141418', color: '#fff' }}>AM</option>
-                            <option value="PM" style={{ background: '#141418', color: '#fff' }}>PM</option>
-                          </select>
-                        </div>
+                    <div className={styles.formGroup}>
+                      <label>Date</label>
+                      <input type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} required />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Time</label>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <select value={newEventHour} onChange={e => setNewEventHour(e.target.value)} style={{ background: '#000', color: '#fff', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', flex: 1 }}>
+                          {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map(h => (
+                            <option key={h} value={h}>{h}</option>
+                          ))}
+                        </select>
+                        <select value={newEventMinute} onChange={e => setNewEventMinute(e.target.value)} style={{ background: '#000', color: '#fff', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', flex: 1 }}>
+                          {['00', '15', '30', '45'].map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                        <select value={newEventAmPm} onChange={e => setNewEventAmPm(e.target.value as any)} style={{ background: '#000', color: '#fff', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', flex: 1 }}>
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
                       </div>
                     </div>
-
                     <div className={styles.formGroup}>
                       <label>Location (Physical Address)</label>
-                      <input 
-                        type="text" 
-                        value={newEventLocation} 
-                        onChange={e => setNewEventLocation(e.target.value)} 
-                        required 
-                        placeholder="e.g. 123 Church St, City, Country"
-                      />
+                      <input type="text" value={newEventLocation} onChange={e => setNewEventLocation(e.target.value)} required />
                     </div>
-
                     <div className={styles.formGroup}>
                       <label>Google Maps Link (Optional)</label>
-                      <input 
-                        type="text" 
-                        value={newEventGmapLink} 
-                        onChange={e => setNewEventGmapLink(e.target.value)} 
-                        placeholder="Map query or embed URL"
-                      />
+                      <input type="text" value={newEventGmapLink} onChange={e => setNewEventGmapLink(e.target.value)} />
                     </div>
-
                     <div className={styles.formGroup}>
                       <label>Travel Cost (₹)</label>
-                      <input 
-                        type="number" 
-                        value={newEventCost} 
-                        onChange={e => setNewEventCost(e.target.value)} 
-                        required 
-                        placeholder="0"
-                        min="0"
-                      />
+                      <input type="number" value={newEventCost} onChange={e => setNewEventCost(e.target.value)} required min="0" />
                     </div>
-
+                    <div className={styles.formGroup}>
+                      <label>Organizer Phone Number (Optional)</label>
+                      <input type="tel" placeholder="e.g. 9876543210" value={newEventOrganizerPhone} onChange={e => setNewEventOrganizerPhone(e.target.value)} />
+                    </div>
                     <div className={styles.modalActions}>
                       <button type="button" className={styles.btnSecondary} onClick={() => setIsEventModalOpen(false)}>Cancel</button>
                       <button type="submit" className={styles.btnPrimary} disabled={isEventSubmitting}>
@@ -1483,134 +1641,56 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Edit Event Modal */}
+            {/* EDIT EVENT MODAL */}
             {isEditEventModalOpen && (
-              <div className={styles.modalOverlay}>
-                <div className={styles.modalContent}>
-                  <h3 className={styles.modalTitle}>Edit Event</h3>
-                  {eventModalError && <div style={{ color: 'var(--crimson)', marginBottom: '1rem', fontSize: '0.9rem' }}>{eventModalError}</div>}
-                  
+              <div className={styles.modalOverlay} onClick={() => setIsEditEventModalOpen(false)}>
+                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                  <h3 className={styles.modalTitle}>Edit Event Details</h3>
+                  {eventModalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{eventModalError}</div>}
                   <form onSubmit={handleEditEventSubmit}>
                     <div className={styles.formGroup}>
                       <label>Event Name</label>
-                      <input 
-                        type="text" 
-                        value={editEventName} 
-                        onChange={e => setEditEventName(e.target.value)} 
-                        required 
-                      />
+                      <input type="text" value={editEventName} onChange={e => setEditEventName(e.target.value)} required />
                     </div>
-                    
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                      <div className={styles.formGroup} style={{ flex: 1 }}>
-                        <label>Date</label>
-                        <input 
-                          type="date" 
-                          value={editEventDate} 
-                          onChange={e => setEditEventDate(e.target.value)} 
-                          required 
-                        />
-                      </div>
-                      <div className={styles.formGroup} style={{ flex: 1.3 }}>
-                        <label>Time</label>
-                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                          <select
-                            value={editEventHour}
-                            onChange={e => setEditEventHour(e.target.value)}
-                            style={{
-                              flex: 1,
-                              background: '#0a0a0d',
-                              border: '1px solid rgba(255, 255, 255, 0.15)',
-                              borderRadius: '6px',
-                              padding: '0.8rem 0.4rem',
-                              color: '#fff',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
-                              <option key={h} value={h} style={{ background: '#141418', color: '#fff' }}>{h}</option>
-                            ))}
-                          </select>
-
-                          <span style={{ fontWeight: 700, color: '#888', fontSize: '1.1rem' }}>:</span>
-
-                          <select
-                            value={editEventMinute}
-                            onChange={e => setEditEventMinute(e.target.value)}
-                            style={{
-                              flex: 1,
-                              background: '#0a0a0d',
-                              border: '1px solid rgba(255, 255, 255, 0.15)',
-                              borderRadius: '6px',
-                              padding: '0.8rem 0.4rem',
-                              color: '#fff',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
-                              <option key={m} value={m} style={{ background: '#141418', color: '#fff' }}>{m}</option>
-                            ))}
-                          </select>
-
-                          <select
-                            value={editEventAmPm}
-                            onChange={e => setEditEventAmPm(e.target.value as 'AM' | 'PM')}
-                            style={{
-                              flex: 1.1,
-                              background: 'var(--crimson)',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '0.8rem 0.4rem',
-                              color: '#fff',
-                              fontWeight: 700,
-                              fontSize: '0.95rem',
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                            }}
-                          >
-                            <option value="AM" style={{ background: '#141418', color: '#fff' }}>AM</option>
-                            <option value="PM" style={{ background: '#141418', color: '#fff' }}>PM</option>
-                          </select>
-                        </div>
+                    <div className={styles.formGroup}>
+                      <label>Date</label>
+                      <input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} required />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Time</label>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <select value={editEventHour} onChange={e => setEditEventHour(e.target.value)} style={{ background: '#000', color: '#fff', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', flex: 1 }}>
+                          {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map(h => (
+                            <option key={h} value={h}>{h}</option>
+                          ))}
+                        </select>
+                        <select value={editEventMinute} onChange={e => setEditEventMinute(e.target.value)} style={{ background: '#000', color: '#fff', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', flex: 1 }}>
+                          {['00', '15', '30', '45'].map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                        <select value={editEventAmPm} onChange={e => setEditEventAmPm(e.target.value as any)} style={{ background: '#000', color: '#fff', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', flex: 1 }}>
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
                       </div>
                     </div>
-
                     <div className={styles.formGroup}>
                       <label>Location (Physical Address)</label>
-                      <input 
-                        type="text" 
-                        value={editEventLocation} 
-                        onChange={e => setEditEventLocation(e.target.value)} 
-                        required 
-                      />
+                      <input type="text" value={editEventLocation} onChange={e => setEditEventLocation(e.target.value)} required />
                     </div>
-
                     <div className={styles.formGroup}>
                       <label>Google Maps Link (Optional)</label>
-                      <input 
-                        type="text" 
-                        value={editEventGmapLink} 
-                        onChange={e => setEditEventGmapLink(e.target.value)} 
-                      />
+                      <input type="text" value={editEventGmapLink} onChange={e => setEditEventGmapLink(e.target.value)} />
                     </div>
-
                     <div className={styles.formGroup}>
                       <label>Travel Cost (₹)</label>
-                      <input 
-                        type="number" 
-                        value={editEventCost} 
-                        onChange={e => setEditEventCost(e.target.value)} 
-                        required 
-                        min="0"
-                      />
+                      <input type="number" value={editEventCost} onChange={e => setEditEventCost(e.target.value)} required min="0" />
                     </div>
-
+                    <div className={styles.formGroup}>
+                      <label>Organizer Phone Number (Optional)</label>
+                      <input type="tel" placeholder="e.g. 9876543210" value={editEventOrganizerPhone} onChange={e => setEditEventOrganizerPhone(e.target.value)} />
+                    </div>
                     <div className={styles.modalActions}>
                       <button type="button" className={styles.btnSecondary} onClick={() => setIsEditEventModalOpen(false)}>Cancel</button>
                       <button type="submit" className={styles.btnPrimary} disabled={isEventSubmitting}>
@@ -1633,39 +1713,101 @@ export default function AdminDashboard() {
             </div>
 
             <div className={styles.usersLayout}>
-              {/* Left Column: Event List */}
+              {/* Left Column: Event List with Filter Controls */}
               <div className={styles.eventSidebar}>
-                <div className={styles.sidebarTitle}>Select Event</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <div className={styles.sidebarTitle} style={{ margin: 0 }}>Select Event</div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '3px', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceFilterMode('all')}
+                    style={{
+                      flex: 1,
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: attendanceFilterMode === 'all' ? 'var(--crimson)' : 'transparent',
+                      color: attendanceFilterMode === 'all' ? '#fff' : '#888'
+                    }}
+                  >
+                    All ({events.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceFilterMode('upcoming')}
+                    style={{
+                      flex: 1,
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: attendanceFilterMode === 'upcoming' ? 'var(--crimson)' : 'transparent',
+                      color: attendanceFilterMode === 'upcoming' ? '#fff' : '#888'
+                    }}
+                  >
+                    Upcoming ({activeEvents.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceFilterMode('past')}
+                    style={{
+                      flex: 1,
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: attendanceFilterMode === 'past' ? 'var(--crimson)' : 'transparent',
+                      color: attendanceFilterMode === 'past' ? '#fff' : '#888'
+                    }}
+                  >
+                    Past ({events.length - activeEvents.length})
+                  </button>
+                </div>
                 
-                {activeEvents.length === 0 ? (
-                  <div className={styles.noUsers}>No upcoming events found.</div>
+                {events.length === 0 ? (
+                  <div className={styles.noUsers}>No events found.</div>
                 ) : (
-                  activeEvents.map(event => {
-                    const upcoming = isEventUpcoming(event.date);
-                    return (
-                      <div 
-                        key={event._id} 
-                        className={`${styles.userListItem} ${attendanceSelectedEvent?._id === event._id ? styles.activeUser : ''}`}
-                        onClick={() => handleSelectAttendanceEvent(event)}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                          <span className={styles.userName}>{event.eventName}</span>
-                          <span style={{
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            background: upcoming ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)',
-                            color: upcoming ? 'var(--crimson)' : '#888',
-                            border: upcoming ? '1px solid rgba(220,20,60,0.4)' : '1px solid rgba(255,255,255,0.1)'
-                          }}>
-                            {upcoming ? 'UPCOMING' : 'PAST'}
-                          </span>
+                  events
+                    .filter(event => {
+                      if (attendanceFilterMode === 'upcoming') return isEventUpcoming(event.date);
+                      if (attendanceFilterMode === 'past') return !isEventUpcoming(event.date);
+                      return true;
+                    })
+                    .map(event => {
+                      const upcoming = isEventUpcoming(event.date);
+                      return (
+                        <div 
+                          key={event._id} 
+                          className={`${styles.userListItem} ${attendanceSelectedEvent?._id === event._id ? styles.activeUser : ''}`}
+                          onClick={() => handleSelectAttendanceEvent(event)}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <span className={styles.userName}>{event.eventName}</span>
+                            <span style={{
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              background: upcoming ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)',
+                              color: upcoming ? 'var(--crimson)' : '#888',
+                              border: upcoming ? '1px solid rgba(220,20,60,0.4)' : '1px solid rgba(255,255,255,0.1)'
+                            }}>
+                              {upcoming ? 'UPCOMING' : 'PAST'}
+                            </span>
+                          </div>
+                          <span className={styles.userPhone}>{event.date} at {formatTimeWithAmPm(event.time)}</span>
                         </div>
-                        <span className={styles.userPhone}>{event.date} at {formatTimeWithAmPm(event.time)}</span>
-                      </div>
-                    );
-                  })
+                      );
+                    })
                 )}
               </div>
 
@@ -1682,60 +1824,288 @@ export default function AdminDashboard() {
                         {attendanceSelectedEvent.locationAddress && <div style={{color: '#888', marginTop: '0.5rem', fontSize: '0.9rem'}}>{attendanceSelectedEvent.locationAddress}</div>}
                       </div>
                       
-                      <button 
-                        className={styles.btnAddUser}
-                        onClick={exportAttendance}
-                        disabled={!attendanceEventDetails?.registeredUsers?.length}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: !attendanceEventDetails?.registeredUsers?.length ? 0.5 : 1 }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                          <polyline points="7 10 12 15 17 10"></polyline>
-                          <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Export Excel
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button 
+                          className={styles.btnAddUser}
+                          onClick={() => setIsBroadcastModalOpen(true)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(37,211,102,0.15)', color: '#25D366', border: '1px solid rgba(37,211,102,0.3)' }}
+                        >
+                          📢 Broadcast
+                        </button>
+                        <button 
+                          className={styles.btnAddUser}
+                          onClick={() => {
+                            setRegSearchQuery('');
+                            setRegCategoryFilter('All');
+                            setIsRegMemberModalOpen(true);
+                          }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--crimson)' }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                          </svg>
+                          + Register Member
+                        </button>
+                        <button 
+                          className={styles.btnAddUser}
+                          onClick={exportAttendance}
+                          disabled={!attendanceEventDetails?.attendances?.length && !attendanceEventDetails?.registeredUsers?.length}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: (!attendanceEventDetails?.attendances?.length && !attendanceEventDetails?.registeredUsers?.length) ? 0.5 : 1 }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          Export Excel
+                        </button>
+                      </div>
                     </div>
 
-                    <div style={{ marginTop: '1.5rem' }}>
-                      <h4 className={styles.eventsSectionTitle}>Registered Users</h4>
+                    {/* Attendance Stats Summary Cards */}
+                    {attendanceEventDetails && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '1rem', marginBottom: '1.25rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', fontWeight: 600 }}>Total Headcount</div>
+                          <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--crimson)', marginTop: '2px' }}>
+                            {attendanceEventDetails.totalHeadcount || 0}
+                          </div>
+                        </div>
+                        <div style={{ background: 'rgba(48,209,88,0.08)', border: '1px solid rgba(48,209,88,0.2)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '10px', color: '#30d158', textTransform: 'uppercase', fontWeight: 600 }}>Present ✓</div>
+                          <div style={{ fontSize: '20px', fontWeight: 800, color: '#30d158', marginTop: '2px' }}>
+                            {attendanceEventDetails.presentCount || 0}
+                          </div>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '10px', color: '#a1a1aa', textTransform: 'uppercase', fontWeight: 600 }}>Registered ⏰</div>
+                          <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                            {attendanceEventDetails.registeredCount || 0}
+                          </div>
+                        </div>
+                        <div style={{ background: 'rgba(255,69,58,0.08)', border: '1px solid rgba(255,69,58,0.2)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '10px', color: '#ff453a', textTransform: 'uppercase', fontWeight: 600 }}>Absent ✗</div>
+                          <div style={{ fontSize: '20px', fontWeight: 800, color: '#ff453a', marginTop: '2px' }}>
+                            {attendanceEventDetails.absentCount || 0}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Attendee Search Input */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      <input
+                        type="text"
+                        placeholder="🔍 Filter attendees by name or phone..."
+                        value={attendanceSearchQuery}
+                        onChange={(e) => setAttendanceSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          background: 'rgba(0,0,0,0.4)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                        <h4 className={styles.eventsSectionTitle} style={{ margin: 0 }}>Attendance Roster</h4>
+                        {attendanceEventDetails?.attendances && attendanceEventDetails.attendances.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleMarkAllPresent}
+                            style={{
+                              background: 'rgba(48,209,88,0.15)',
+                              color: '#30d158',
+                              border: '1px solid rgba(48,209,88,0.3)',
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ✓ Mark All Present
+                          </button>
+                        )}
+                      </div>
                       
                       {!attendanceEventDetails ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#888' }}>
                            <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid var(--crimson)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></span>
                            Loading attendance...
                         </div>
-                      ) : attendanceEventDetails.registeredUsers.length === 0 ? (
+                      ) : (attendanceEventDetails.attendances?.length === 0 && attendanceEventDetails.registeredUsers?.length === 0) ? (
                         <p style={{ color: '#888', fontStyle: 'italic' }}>No users are registered for this event yet.</p>
                       ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-                          {attendanceEventDetails.registeredUsers.map((user: any) => (
-                            <div key={user._id} style={{ 
-                                background: 'rgba(255, 255, 255, 0.03)', 
-                                padding: '1rem', 
-                                borderRadius: '12px',
-                                border: '1px solid rgba(255, 255, 255, 0.05)'
-                              }}>
-                              <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--foreground)' }}>{user.name}</h4>
-                              <a 
-                                href={`tel:${user.contactNumber}`}
-                                style={{ 
-                                  color: 'var(--crimson)', 
-                                  fontSize: '0.9rem', 
-                                  textDecoration: 'none', 
-                                  fontWeight: 600,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  marginTop: '2px',
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                                onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
-                              >
-                                📞 {user.contactNumber}
-                              </a>
-                            </div>
-                          ))}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                          {attendanceEventDetails.attendances && attendanceEventDetails.attendances.length > 0 ? (
+                            attendanceEventDetails.attendances
+                              .filter((att: any) => {
+                                if (!attendanceSearchQuery.trim()) return true;
+                                const q = attendanceSearchQuery.toLowerCase();
+                                return (att.userId?.name || '').toLowerCase().includes(q) ||
+                                       (att.userId?.contactNumber || '').includes(q);
+                              })
+                              .map((att: any) => {
+                                const badge = getCategoryBadgeStyle(att.userId?.category);
+                                const currentStatus = att.status || 'Registered';
+
+                                return (
+                                  <div key={att._id} style={{ 
+                                      background: 'rgba(255, 255, 255, 0.03)', 
+                                      padding: '1rem', 
+                                      borderRadius: '12px',
+                                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      justifyContent: 'space-between'
+                                    }}>
+                                    <div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div>
+                                          <h4 style={{ margin: '0 0 0.2rem 0', color: 'var(--foreground)', fontSize: '1rem' }}>{att.userId?.name || 'Member'}</h4>
+                                          <span style={{
+                                            fontSize: '9px',
+                                            fontWeight: 700,
+                                            padding: '1px 6px',
+                                            borderRadius: '8px',
+                                            background: badge.bg,
+                                            color: badge.color,
+                                            border: `1px solid ${badge.border}`
+                                          }}>
+                                            {att.userId?.category || 'General'}
+                                          </span>
+                                        </div>
+
+                                        <span style={{
+                                          fontSize: '11px',
+                                          fontWeight: 700,
+                                          background: att.additionalCount > 0 ? 'rgba(220,20,60,0.2)' : 'rgba(255,255,255,0.08)',
+                                          color: att.additionalCount > 0 ? '#ff4d6d' : '#a1a1aa',
+                                          padding: '2px 8px',
+                                          borderRadius: '12px',
+                                          border: att.additionalCount > 0 ? '1px solid rgba(220,20,60,0.4)' : '1px solid rgba(255,255,255,0.1)'
+                                        }}>
+                                          {att.additionalCount > 0 ? `+${att.additionalCount} Guests` : 'Self (1)'}
+                                        </span>
+                                      </div>
+
+                                      <a 
+                                        href={`tel:${att.userId?.contactNumber}`}
+                                        style={{ 
+                                          color: 'var(--crimson)', 
+                                          fontSize: '0.85rem', 
+                                          textDecoration: 'none', 
+                                          fontWeight: 600,
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                          marginTop: '4px',
+                                        }}
+                                      >
+                                        📞 {att.userId?.contactNumber || 'no number'}
+                                      </a>
+
+                                      {att.guestNames && (
+                                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#888' }}>
+                                          👥 <strong>With:</strong> {att.guestNames}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* 1-Click Attendance Status Toggles */}
+                                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '4px' }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleUpdateAttendanceStatus(att.userId?._id, 'Registered')}
+                                        style={{
+                                          flex: 1,
+                                          padding: '4px 6px',
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          borderRadius: '6px',
+                                          border: 'none',
+                                          cursor: 'pointer',
+                                          background: currentStatus === 'Registered' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.04)',
+                                          color: currentStatus === 'Registered' ? '#fff' : '#666'
+                                        }}
+                                      >
+                                        Registered
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleUpdateAttendanceStatus(att.userId?._id, 'Present')}
+                                        style={{
+                                          flex: 1,
+                                          padding: '4px 6px',
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          borderRadius: '6px',
+                                          border: 'none',
+                                          cursor: 'pointer',
+                                          background: currentStatus === 'Present' ? '#30d158' : 'rgba(48,209,88,0.1)',
+                                          color: currentStatus === 'Present' ? '#fff' : '#30d158'
+                                        }}
+                                      >
+                                        Present ✓
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleUpdateAttendanceStatus(att.userId?._id, 'Absent')}
+                                        style={{
+                                          flex: 1,
+                                          padding: '4px 6px',
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          borderRadius: '6px',
+                                          border: 'none',
+                                          cursor: 'pointer',
+                                          background: currentStatus === 'Absent' ? '#ff453a' : 'rgba(255,69,58,0.1)',
+                                          color: currentStatus === 'Absent' ? '#fff' : '#ff453a'
+                                        }}
+                                      >
+                                        Absent ✗
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                          ) : (
+                            attendanceEventDetails.registeredUsers?.map((user: any) => (
+                              <div key={user._id} style={{ 
+                                  background: 'rgba(255, 255, 255, 0.03)', 
+                                  padding: '1rem', 
+                                  borderRadius: '12px',
+                                  border: '1px solid rgba(255, 255, 255, 0.05)'
+                                }}>
+                                <h4 style={{ margin: '0 0 0.25rem 0', color: 'var(--foreground)' }}>{user.name}</h4>
+                                <a 
+                                  href={`tel:${user.contactNumber}`}
+                                  style={{ 
+                                    color: 'var(--crimson)', 
+                                    fontSize: '0.9rem', 
+                                    textDecoration: 'none', 
+                                    fontWeight: 600,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginTop: '2px',
+                                  }}
+                                >
+                                  📞 {user.contactNumber}
+                                </a>
+                              </div>
+                            ))
+                          )}
                         </div>
                       )}
                     </div>
@@ -1746,6 +2116,7 @@ export default function AdminDashboard() {
           </div>
         )}
       </main>
+
       {/* Fixed Mobile Bottom Navigation Bar */}
       <nav className={styles.bottomNav}>
         <button 
@@ -1787,17 +2158,47 @@ export default function AdminDashboard() {
               <>
                 <div className={styles.detailsHeader}>
                   <div className={styles.detailsTitleArea}>
-                    <h3 className={styles.detailsTitle}>{selectedUser.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 className={styles.detailsTitle}>{selectedUser.name}</h3>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        background: getCategoryBadgeStyle(selectedUser.category).bg,
+                        color: getCategoryBadgeStyle(selectedUser.category).color,
+                        border: `1px solid ${getCategoryBadgeStyle(selectedUser.category).border}`
+                      }}>
+                        {selectedUser.category || 'General'}
+                      </span>
+                    </div>
                     <a href={`tel:${selectedUser.contactNumber}`} className={styles.detailsPhone} style={{ textDecoration: 'none' }}>
                       📞 {selectedUser.contactNumber}
                     </a>
                   </div>
-                  <button 
-                    className={styles.btnDelete}
-                    onClick={() => { handleDeleteUser(selectedUser._id); setIsMobileDetailOpen(false); }}
-                  >
-                    Delete User
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    <button 
+                      className={styles.btnAddUser}
+                      onClick={() => { setIsMobileDetailOpen(false); handleOpenUserRegEventModal(selectedUser); }}
+                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                    >
+                      + Register to Event
+                    </button>
+                    <button 
+                      className={styles.btnEdit}
+                      onClick={() => { setIsMobileDetailOpen(false); handleOpenEditUser(selectedUser); }}
+                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      className={styles.btnDelete}
+                      onClick={() => { handleDeleteUser(selectedUser._id); setIsMobileDetailOpen(false); }}
+                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ marginTop: '1rem' }}>
@@ -1846,20 +2247,14 @@ export default function AdminDashboard() {
                 <div style={{ marginTop: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <h4 className={styles.eventsSectionTitle}>Registered Users ({eventDetails?.registeredUsers?.length || 0})</h4>
-                    <button
-                      className={styles.btnEdit}
-                      onClick={() => { setIsMobileDetailOpen(false); setIsAddUsersToEventOpen(true); }}
-                    >
-                      + Add Users
-                    </button>
                   </div>
                   {!eventDetails ? (
                     <div className={styles.noEvents}>Loading...</div>
-                  ) : eventDetails.registeredUsers.length === 0 ? (
+                  ) : eventDetails.registeredUsers?.length === 0 ? (
                     <div className={styles.noEvents}>No users registered yet.</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {eventDetails.registeredUsers.map(user => (
+                      {eventDetails.registeredUsers?.map(user => (
                         <div key={user._id} style={{ padding: '0.75rem 0.85rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name}</span>
                           <a href={`tel:${user.contactNumber}`} style={{ color: 'var(--crimson)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem' }}>
@@ -1881,37 +2276,458 @@ export default function AdminDashboard() {
                     <h3 className={styles.detailsTitle}>{attendanceSelectedEvent.eventName}</h3>
                     <div className={styles.detailsPhone}>{attendanceSelectedEvent.date} &bull; {formatTimeWithAmPm(attendanceSelectedEvent.time)}</div>
                   </div>
-                  <button 
-                    className={styles.btnAddUser}
-                    onClick={exportAttendance}
-                    disabled={!attendanceEventDetails?.registeredUsers?.length}
-                    style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-                  >
-                    Export Excel
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                    <button 
+                      className={styles.btnAddUser}
+                      onClick={() => {
+                        setRegSearchQuery('');
+                        setRegCategoryFilter('All');
+                        setIsRegMemberModalOpen(true);
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '12px', padding: '6px 10px', background: 'var(--crimson)' }}
+                    >
+                      + Register Member
+                    </button>
+                    <button 
+                      className={styles.btnAddUser}
+                      onClick={exportAttendance}
+                      disabled={!attendanceEventDetails?.attendances?.length && !attendanceEventDetails?.registeredUsers?.length}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '12px', padding: '6px 10px' }}
+                    >
+                      Export Excel
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ marginTop: '1rem' }}>
-                  <h4 className={styles.eventsSectionTitle}>Registered Users</h4>
+                  <h4 className={styles.eventsSectionTitle}>
+                    Attendance Roster ({attendanceEventDetails?.totalHeadcount || 0} Headcount)
+                  </h4>
                   {!attendanceEventDetails ? (
                     <div className={styles.noEvents}>Loading...</div>
-                  ) : attendanceEventDetails.registeredUsers.length === 0 ? (
+                  ) : (!attendanceEventDetails.attendances?.length && !attendanceEventDetails.registeredUsers?.length) ? (
                     <div className={styles.noEvents}>No users registered yet.</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      {attendanceEventDetails.registeredUsers.map((user: any) => (
-                        <div key={user._id} style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.75rem', borderRadius: '10px' }}>
-                          <h4 style={{ margin: '0 0 0.2rem 0', fontSize: '0.95rem' }}>{user.name}</h4>
-                          <a href={`tel:${user.contactNumber}`} style={{ color: 'var(--crimson)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
-                            📞 {user.contactNumber}
-                          </a>
-                        </div>
-                      ))}
+                      {attendanceEventDetails.attendances && attendanceEventDetails.attendances.length > 0 ? (
+                        attendanceEventDetails.attendances.map((att: any) => {
+                          const currentStatus = att.status || 'Registered';
+                          return (
+                            <div key={att._id} style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.75rem', borderRadius: '10px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h4 style={{ margin: 0, fontSize: '0.95rem' }}>{att.userId?.name || 'Member'}</h4>
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: att.additionalCount > 0 ? '#ff4d6d' : '#888' }}>
+                                  {att.additionalCount > 0 ? `+${att.additionalCount} Guests` : 'Self (1)'}
+                                </span>
+                              </div>
+                              <a href={`tel:${att.userId?.contactNumber}`} style={{ color: 'var(--crimson)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, marginTop: '2px', display: 'inline-block' }}>
+                                📞 {att.userId?.contactNumber || 'no number'}
+                              </a>
+                              {att.guestNames && (
+                                <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                                  👥 With: {att.guestNames}
+                                </div>
+                              )}
+
+                              {/* Mobile 1-Click Status Toggles */}
+                              <div style={{ marginTop: '8px', display: 'flex', gap: '4px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAttendanceStatus(att.userId?._id, 'Registered')}
+                                  style={{
+                                    flex: 1, padding: '4px', fontSize: '10px', fontWeight: 600, borderRadius: '4px', border: 'none',
+                                    background: currentStatus === 'Registered' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.04)',
+                                    color: currentStatus === 'Registered' ? '#fff' : '#666'
+                                  }}
+                                >
+                                  Registered
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAttendanceStatus(att.userId?._id, 'Present')}
+                                  style={{
+                                    flex: 1, padding: '4px', fontSize: '10px', fontWeight: 600, borderRadius: '4px', border: 'none',
+                                    background: currentStatus === 'Present' ? '#30d158' : 'rgba(48,209,88,0.1)',
+                                    color: currentStatus === 'Present' ? '#fff' : '#30d158'
+                                  }}
+                                >
+                                  Present ✓
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAttendanceStatus(att.userId?._id, 'Absent')}
+                                  style={{
+                                    flex: 1, padding: '4px', fontSize: '10px', fontWeight: 600, borderRadius: '4px', border: 'none',
+                                    background: currentStatus === 'Absent' ? '#ff453a' : 'rgba(255,69,58,0.1)',
+                                    color: currentStatus === 'Absent' ? '#fff' : '#ff453a'
+                                  }}
+                                >
+                                  Absent ✗
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        attendanceEventDetails.registeredUsers?.map((user: any) => (
+                          <div key={user._id} style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.75rem', borderRadius: '10px' }}>
+                            <h4 style={{ margin: '0 0 0.2rem 0', fontSize: '0.95rem' }}>{user.name}</h4>
+                            <a href={`tel:${user.contactNumber}`} style={{ color: 'var(--crimson)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
+                              📞 {user.contactNumber}
+                            </a>
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* REGISTER MEMBER TO CURRENT EVENT MODAL (Attendance Dashboard) */}
+      {isRegMemberModalOpen && attendanceSelectedEvent && (
+        <div className={styles.modalOverlay} onClick={() => setIsRegMemberModalOpen(false)}>
+          <div className={styles.modalContent} style={{ maxWidth: '650px', width: '92%', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div>
+                <h3 className={styles.modalTitle} style={{ margin: 0 }}>Register Members to Event</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--crimson)', fontWeight: 600 }}>
+                  {attendanceSelectedEvent.eventName} ({attendanceSelectedEvent.date})
+                </p>
+              </div>
+              <button onClick={() => setIsRegMemberModalOpen(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            {/* Search & Category Filter Bar */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              <input
+                type="text"
+                placeholder="🔍 Search member by name or phone..."
+                value={regSearchQuery}
+                onChange={e => setRegSearchQuery(e.target.value)}
+                style={{ flex: 1, minWidth: '180px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: '13px', outline: 'none' }}
+              />
+              <div style={{ display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.3)', padding: '3px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto', maxWidth: '100%' }}>
+                {['All', ...categories.map(c => c.name)].map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setRegCategoryFilter(cat)}
+                    style={{
+                      padding: '4px 8px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                      background: regCategoryFilter === cat ? 'var(--crimson)' : 'transparent',
+                      color: regCategoryFilter === cat ? '#fff' : '#888'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Members List */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+              {users
+                .filter(u => {
+                  const matchesSearch = !regSearchQuery.trim() || 
+                    u.name.toLowerCase().includes(regSearchQuery.toLowerCase()) || 
+                    (u.contactNumber || '').includes(regSearchQuery);
+                  const matchesCat = regCategoryFilter === 'All' || u.category === regCategoryFilter;
+                  return matchesSearch && matchesCat;
+                })
+                .map(user => {
+                  const existingAtt = (attendanceEventDetails?.attendances || []).find(
+                    (att: any) => (att.userId?._id === user._id || att.userId === user._id)
+                  );
+                  const isSubmitting = regSubmittingUserId === user._id;
+                  const extraCount = regGuestCounts[user._id] || 0;
+                  const guestNamesStr = regGuestNamesMap[user._id] || '';
+                  const badge = getCategoryBadgeStyle(user.category);
+
+                  return (
+                    <div key={user._id} style={{
+                      background: existingAtt ? 'rgba(48,209,88,0.05)' : 'rgba(255,255,255,0.03)',
+                      border: existingAtt ? '1px solid rgba(48,209,88,0.2)' : '1px solid rgba(255,255,255,0.06)',
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: 600, color: '#fff', fontSize: '14px' }}>{user.name}</span>
+                          <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 6px', borderRadius: '8px', background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
+                            {user.category || 'General'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>📞 {user.contactNumber}</div>
+
+                        {!existingAtt && (
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+                            <label style={{ fontSize: '11px', color: '#aaa', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              + Guests:
+                              <input
+                                type="number"
+                                min="0"
+                                max="20"
+                                value={extraCount}
+                                onChange={e => setRegGuestCounts(prev => ({ ...prev, [user._id]: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
+                                style={{ width: '45px', padding: '2px 4px', borderRadius: '4px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', textAlign: 'center' }}
+                              />
+                            </label>
+                            {extraCount > 0 && (
+                              <input
+                                type="text"
+                                placeholder="Guest names..."
+                                value={guestNamesStr}
+                                onChange={e => setRegGuestNamesMap(prev => ({ ...prev, [user._id]: e.target.value }))}
+                                style={{ flex: 1, padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px' }}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        {existingAtt ? (
+                          <button
+                            type="button"
+                            disabled={isSubmitting}
+                            onClick={() => handleRemoveMemberFromCurrentEvent(user._id)}
+                            style={{
+                              padding: '5px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', border: '1px solid rgba(255,69,58,0.4)',
+                              background: 'rgba(255,69,58,0.1)', color: '#ff453a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+                            }}
+                          >
+                            {isSubmitting ? '...' : '✓ Registered (Remove)'}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={isSubmitting}
+                            onClick={() => handleRegisterMemberToCurrentEvent(user._id, extraCount, guestNamesStr)}
+                            style={{
+                              padding: '5px 12px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', border: 'none',
+                              background: 'var(--crimson)', color: '#fff', cursor: 'pointer'
+                            }}
+                          >
+                            {isSubmitting ? 'Registering...' : '+ Register'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="button" className={styles.btnSecondary} onClick={() => setIsRegMemberModalOpen(false)}>Done</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REGISTER MEMBER TO EVENT MODAL (User Management Tab) */}
+      {isUserRegEventModalOpen && selectedUser && (
+        <div className={styles.modalOverlay} onClick={() => setIsUserRegEventModalOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Register Member to Event</h3>
+            <p style={{ color: '#888', fontSize: '13px', marginBottom: '1rem' }}>
+              Registering <strong>{selectedUser.name}</strong> ({selectedUser.contactNumber})
+            </p>
+
+            {userRegError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{userRegError}</div>}
+
+            <form onSubmit={handleUserRegEventSubmit}>
+              <div className={styles.formGroup}>
+                <label>Select Event</label>
+                <select
+                  value={userRegSelectedEventId}
+                  onChange={e => setUserRegSelectedEventId(e.target.value)}
+                  required
+                  style={{ background: '#000', border: '1px solid #333', padding: '0.8rem', borderRadius: '6px', color: '#fff', width: '100%' }}
+                >
+                  {events.length === 0 ? (
+                    <option value="">No events available</option>
+                  ) : (
+                    events.map(ev => (
+                      <option key={ev._id} value={ev._id}>
+                        {ev.eventName} ({ev.date} - {formatTimeWithAmPm(ev.time)}) {isEventUpcoming(ev.date) ? '[UPCOMING]' : ''}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Additional Guests (+)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={userRegAdditionalCount}
+                  onChange={e => setUserRegAdditionalCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                />
+              </div>
+
+              {userRegAdditionalCount > 0 && (
+                <div className={styles.formGroup}>
+                  <label>Guest Names / Notes</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Spouse, Children"
+                    value={userRegGuestNames}
+                    onChange={e => setUserRegGuestNames(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className={styles.modalActions}>
+                <button type="button" className={styles.btnSecondary} onClick={() => setIsUserRegEventModalOpen(false)}>Cancel</button>
+                <button type="submit" className={styles.btnPrimary} disabled={isUserRegSubmitting || !userRegSelectedEventId}>
+                  {isUserRegSubmitting ? 'Registering...' : 'Confirm Registration'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* MANAGE CATEGORIES MODAL */}
+      {isCategoryModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsCategoryModalOpen(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3 className={styles.modalTitle}>Manage Member Categories</h3>
+            <p style={{ color: '#888', fontSize: '13px', marginBottom: '1rem' }}>
+              Create custom categories for organizing members (e.g. Volunteers, Seniors, Worship Team).
+            </p>
+
+            {categoryError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{categoryError}</div>}
+
+            <form onSubmit={handleCreateCategory} style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
+              <input
+                type="text"
+                placeholder="New Category Name..."
+                value={newCategoryName}
+                onChange={e => setNewCategoryName(e.target.value)}
+                required
+                style={{ flex: 1, padding: '0.8rem', borderRadius: '6px', background: '#000', border: '1px solid #333', color: '#fff', fontSize: '14px' }}
+              />
+              <button type="submit" className={styles.btnPrimary} disabled={isCreatingCategory || !newCategoryName.trim()}>
+                {isCreatingCategory ? 'Adding...' : '+ Add'}
+              </button>
+            </form>
+
+            <h4 style={{ fontSize: '14px', color: '#fff', marginBottom: '0.5rem' }}>Existing Categories ({categories.length})</h4>
+            <div style={{ maxHeight: '250px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {categories.length === 0 ? (
+                <p style={{ color: '#666', fontStyle: 'italic', fontSize: '13px' }}>No categories created yet. Create your first category above!</p>
+              ) : (
+                categories.map(cat => {
+                  const badge = getCategoryBadgeStyle(cat.name);
+                  return (
+                    <div key={cat._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
+                        {cat.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(cat._id)}
+                        style={{ background: 'none', border: 'none', color: '#ff453a', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
+              <button type="button" className={styles.btnSecondary} onClick={() => setIsCategoryModalOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* WHATSAPP BROADCAST MODAL */}
+      {isBroadcastModalOpen && (attendanceSelectedEvent || selectedEvent) && (
+        <div className={styles.modalOverlay} onClick={() => setIsBroadcastModalOpen(false)}>
+          <div className={styles.modalContent} style={{ maxWidth: '550px' }} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>📢 Event Broadcast Generator</h3>
+            <p style={{ color: '#888', fontSize: '13px', marginBottom: '1rem' }}>
+              Generate pre-formatted announcement and reminder messages to share on WhatsApp groups or send to members.
+            </p>
+
+            {/* Broadcast Mode Tabs */}
+            <div style={{ display: 'flex', gap: '6px', background: 'rgba(0,0,0,0.4)', padding: '4px', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <button
+                type="button"
+                onClick={() => setBroadcastType('announcement')}
+                style={{
+                  flex: 1, padding: '8px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  background: broadcastType === 'announcement' ? 'var(--crimson)' : 'transparent',
+                  color: broadcastType === 'announcement' ? '#fff' : '#888'
+                }}
+              >
+                📣 Announcement & Invite
+              </button>
+              <button
+                type="button"
+                onClick={() => setBroadcastType('reminder')}
+                style={{
+                  flex: 1, padding: '8px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  background: broadcastType === 'reminder' ? 'var(--crimson)' : 'transparent',
+                  color: broadcastType === 'reminder' ? '#fff' : '#888'
+                }}
+              >
+                🔔 Attendee Reminder
+              </button>
+            </div>
+
+            {/* Generated Message Textarea */}
+            <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
+              <textarea
+                readOnly
+                rows={9}
+                value={getBroadcastMessageText()}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  background: 'rgba(0,0,0,0.6)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#25D366',
+                  fontFamily: 'monospace',
+                  fontSize: '13px',
+                  lineHeight: 1.5,
+                  resize: 'none'
+                }}
+              />
+            </div>
+
+            <div className={styles.modalActions} style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button type="button" className={styles.btnSecondary} onClick={() => setIsBroadcastModalOpen(false)}>Close</button>
+              <button
+                type="button"
+                className={styles.btnAddUser}
+                onClick={handleCopyBroadcastMessage}
+                style={{ background: broadcastCopied ? '#30d158' : 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
+              >
+                {broadcastCopied ? '✓ Copied!' : '📋 Copy Text'}
+              </button>
+              <button
+                type="button"
+                className={styles.btnAddUser}
+                onClick={handleShareWhatsAppBroadcast}
+                style={{ background: '#25D366', color: '#fff' }}
+              >
+                💬 Share on WhatsApp
+              </button>
+            </div>
           </div>
         </div>
       )}

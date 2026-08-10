@@ -10,5 +10,7 @@ const WeeklyScheduleSchema = new mongoose.Schema<IWeeklySchedule>({
   services: [{ type: String, required: true }],
 });
 
+WeeklyScheduleSchema.index({ day: 1 });
+
 export default mongoose.models.WeeklySchedule ||
   mongoose.model<IWeeklySchedule>('WeeklySchedule', WeeklyScheduleSchema);

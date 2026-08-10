@@ -14,18 +14,33 @@ export async function POST(request: Request) {
 
     if (mode === 'admin') {
       if (password !== 'JESUSLOVESYOU') {
-        return NextResponse.json({ error: 'Invalid admin credentials' }, { status: 401 });
+        return NextResponse.json({ error: 'Invalid admin passcode' }, { status: 401 });
       }
       userRole = 'admin';
       
-      // Upsert admin user
-      const adminUser = await User.findOneAndUpdate(
-        { contactNumber: '0000000000' }, 
-        { name: 'Administrator', contactNumber: '0000000000', role: 'admin' },
-        { upsert: true, new: true }
-      );
-      userId = adminUser._id.toString();
-      
+      if (name && name.trim() && contactNumber) {
+        const digitsOnly = String(contactNumber).replace(/\D/g, '');
+        const cleanPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
+        if (!/^\d{10}$/.test(cleanPhone)) {
+          return NextResponse.json({ error: 'Contact number must be exactly 10 digits' }, { status: 400 });
+        }
+
+        const trimmedName = name.trim();
+        const adminUser = await User.findOneAndUpdate(
+          { contactNumber: cleanPhone, name: new RegExp(`^${trimmedName}$`, 'i') }, 
+          { name: trimmedName, contactNumber: cleanPhone, role: 'admin' },
+          { upsert: true, new: true }
+        );
+        userId = adminUser._id.toString();
+      } else {
+        // Upsert default master admin user
+        const adminUser = await User.findOneAndUpdate(
+          { contactNumber: '0000000000' }, 
+          { name: 'Administrator', contactNumber: '0000000000', role: 'admin' },
+          { upsert: true, new: true }
+        );
+        userId = adminUser._id.toString();
+      }
     } else {
       if (!name || !contactNumber) {
         return NextResponse.json({ error: 'Name and contact number are required' }, { status: 400 });
@@ -64,16 +79,17 @@ export async function POST(request: Request) {
       userId = user._id.toString();
     }
 
-    // Set HTTP-only cookie for session
+    // Set HTTP-only cookie for session (1 year persistence)
     const cookieStore = await cookies();
     cookieStore.set('auth-token', userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: 60 * 60 * 24 * 365, // 1 year persistence
       path: '/',
+      sameSite: 'lax',
     });
 
-    return NextResponse.json({ success: true, role: userRole });
+    return NextResponse.json({ success: true, role: userRole, userId, token: userId });
     
   } catch (error: any) {
     console.error('Login Error:', error);

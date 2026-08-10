@@ -1,0 +1,47 @@
+{
+  "name": "DA-ROS Church Events & Operations",
+  "short_name": "DA-ROS",
+  "description": "Discover, register, manage member attendance, and stay connected with Church Events.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#dc143c",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["events", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Church Events",
+      "short_name": "Events",
+      "description": "View upcoming church events and service schedule",
+      "url": "/home",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Admin Dashboard",
+      "short_name": "Admin",
+      "description": "Manage members, attendance, and events",
+      "url": "/admin",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

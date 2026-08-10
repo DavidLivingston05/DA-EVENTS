@@ -324,3 +324,61 @@
     padding: 30px 20px;
   }
 }
+
+/* Light Mode Overrides */
+.containerLight {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+.containerLight .leftPanel {
+  background-color: #f8fafc;
+}
+.containerLight .logoText {
+  color: #0f172a;
+}
+.containerLight .tagline, .containerLight .featureText {
+  color: #475569;
+}
+.containerLight .featureIcon {
+  background: rgba(220, 20, 60, 0.1);
+  color: #dc143c;
+}
+.containerLight .card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.containerLight .title {
+  color: #0f172a;
+}
+.containerLight .subtitle {
+  color: #64748b;
+}
+.containerLight .segmentedControl {
+  background: #f1f5f9;
+}
+.containerLight .segmentButton {
+  color: #64748b;
+}
+.containerLight .segmentButton.activeSegment {
+  color: #0f172a;
+}
+.containerLight .segmentIndicator {
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.containerLight .input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+.containerLight .input:focus {
+  border-color: #dc143c;
+  background: #ffffff;
+}
+.containerLight .floatingLabel {
+  color: #64748b;
+}
+.containerLight .adminLabel {
+  color: #64748b;
+}

@@ -1,6 +1,9 @@
 .container {
   min-height: 100vh;
-  background-color: #000000;
+  background-color: #09090b;
+  background-image: 
+    radial-gradient(circle at 50% -100px, rgba(220, 20, 60, 0.25) 0%, rgba(9, 9, 11, 0) 65%),
+    radial-gradient(circle at 90% 500px, rgba(220, 20, 60, 0.08) 0%, rgba(9, 9, 11, 0) 50%);
   color: #f4f8fb;
   font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   overflow-x: hidden;
@@ -11,17 +14,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 52px;
-  padding: 0 2rem;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  height: 64px;
+  padding: 0 3rem;
+  background: rgba(12, 12, 16, 0.82);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 9999;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logoArea {
@@ -30,38 +33,47 @@
 }
 
 .logoText {
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #f4f8fb;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .navTabs {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 12px;
+  border-radius: 980px;
 }
 
 .tab {
   background: transparent;
   border: none;
-  color: #e8e8ed;
+  color: #a1a1aa;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   cursor: pointer;
-  padding: 0.5rem 0;
-  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 0.8;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tab:hover {
-  opacity: 1;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .activeTab {
-  color: #f4f8fb;
-  font-weight: 600;
-  opacity: 1;
+  color: #ffffff;
+  background: rgba(220, 20, 60, 0.28) !important;
+  border: 1px solid rgba(220, 20, 60, 0.5);
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.3);
 }
 
 .profileArea {
@@ -71,23 +83,25 @@
 }
 
 .profileCircle {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   background-color: #dc143c;
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 16px rgba(220, 20, 60, 0.4);
 }
 
 .profileCircle:hover {
-  transform: scale(1.08);
+  transform: scale(1.1);
+  box-shadow: 0 0 24px rgba(220, 20, 60, 0.6);
 }
 
 .profileDropdown {
@@ -165,31 +179,31 @@
 
 /* Straight Horizontal Reminder Card */
 .reminderContainer {
-  padding-top: 76px; /* offset fixed navbar */
-  max-width: 1200px;
+  padding-top: 88px; /* offset fixed navbar */
+  max-width: 1440px;
   margin: 0 auto;
   padding-left: 2rem;
   padding-right: 2rem;
 }
 
 .reminderCard {
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.12) 0%, rgba(22, 22, 26, 0.8) 100%);
-  border: 1px solid rgba(220, 20, 60, 0.25);
-  border-left: 4px solid #dc143c;
-  border-radius: 16px;
-  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(220, 20, 60, 0.14) 0%, rgba(20, 20, 25, 0.85) 100%);
+  border: 1px solid rgba(220, 20, 60, 0.3);
+  border-left: 5px solid #dc143c;
+  border-radius: 20px;
+  padding: 1.5rem 2.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
   margin-top: 1rem;
 }
 
 .reminderCard:hover {
-  border-color: rgba(220, 20, 60, 0.5);
-  box-shadow: 0 12px 40px rgba(220, 20, 60, 0.15);
+  border-color: rgba(220, 20, 60, 0.6);
+  box-shadow: 0 16px 50px rgba(220, 20, 60, 0.2);
 }
 
 .reminderLeft {
@@ -207,7 +221,7 @@
 }
 
 .reminderTitle {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #fff;
   margin: 0 0 0.25rem 0;
@@ -215,36 +229,37 @@
 
 .reminderSub {
   font-size: 14px;
-  color: #86868b;
+  color: #a1a1aa;
   margin: 0;
 }
 
 .reminderBtn {
-  background: #dc143c;
+  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
   color: #fff;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.85rem 1.75rem;
   border-radius: 980px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 0.2s, background 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(220, 20, 60, 0.4);
 }
 
 .reminderBtn:hover {
   transform: translateY(-2px);
-  background: #e61943;
+  box-shadow: 0 8px 28px rgba(220, 20, 60, 0.6);
 }
 
 /* Main Content */
 .mainContent {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 2rem 6rem;
   display: flex;
@@ -256,21 +271,23 @@
 
 /* Featured Card */
 .featuredCard {
-  background-color: #161617;
-  border: 1px solid #272729;
-  border-radius: 20px;
-  padding: 3rem;
+  background: linear-gradient(135deg, rgba(26, 26, 32, 0.95) 0%, rgba(16, 16, 20, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 3.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
   transform-style: preserve-3d;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .featuredCard:hover {
-  transform: scale(1.01);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-4px) scale(1.008);
+  border-color: rgba(220, 20, 60, 0.5);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(220, 20, 60, 0.2);
 }
 
 .featuredLeft {
@@ -280,19 +297,20 @@
 
 .badge {
   display: inline-block;
-  background-color: #dc143c;
+  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 4px 10px;
-  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 5px 14px;
+  border-radius: 20px;
   margin-bottom: 1.5rem;
+  box-shadow: 0 4px 14px rgba(220, 20, 60, 0.3);
 }
 
 .featuredTitle {
   font-size: 48px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.03em;
   color: #f4f8fb;
   margin: 0 0 1.5rem 0;
@@ -306,10 +324,11 @@
 }
 
 .pill {
-  background-color: #272729;
-  color: #e8e8ed;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e4e4e7;
   font-size: 14px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-weight: 500;
 }
@@ -323,29 +342,29 @@
 }
 
 .dateCircle {
-  width: 130px;
-  height: 130px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(220, 20, 60, 0.25) 0%, rgba(220, 20, 60, 0.08) 100%);
-  border: 2px solid rgba(220, 20, 60, 0.6);
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.3) 0%, rgba(220, 20, 60, 0.1) 100%);
+  border: 2px solid rgba(220, 20, 60, 0.7);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   color: #dc143c;
-  box-shadow: 0 0 30px rgba(220, 20, 60, 0.25);
+  box-shadow: 0 0 35px rgba(220, 20, 60, 0.35);
   padding: 8px;
 }
 
 .dateMonth {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .dateDay {
-  font-size: 38px;
+  font-size: 40px;
   font-weight: 800;
   line-height: 1;
   margin: 1px 0;
@@ -355,44 +374,54 @@
   font-size: 11px;
   font-weight: 700;
   color: #f4f8fb;
-  background: rgba(220, 20, 60, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(220, 20, 60, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  padding: 2px 8px;
-  margin-top: 3px;
+  padding: 2px 10px;
+  margin-top: 4px;
   white-space: nowrap;
 }
 
 /* Events Grid */
 .eventsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 2rem;
 }
 
 .eventCard {
-  background-color: #161617;
-  border: 1px solid #272729;
-  border-radius: 16px;
-  padding: 24px;
+  background: rgba(18, 18, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 28px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   height: 100%;
+  backdrop-filter: blur(16px);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.eventCard:hover {
+  transform: translateY(-8px) scale(1.015);
+  background: rgba(24, 24, 30, 0.95);
+  border-color: rgba(220, 20, 60, 0.5);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 30px rgba(220, 20, 60, 0.25);
 }
 
 .cardDate {
   color: #dc143c;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   margin-bottom: 0.75rem;
 }
 
 .cardTitle {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: #f4f8fb;
   margin: 0 0 1rem 0;
@@ -674,15 +703,19 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 62px;
-    background: rgba(12, 12, 16, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(12, 12, 16, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 9999;
     justify-content: space-around;
     align-items: center;
-    padding: 0 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .bottomNavItem {
@@ -717,13 +750,17 @@
     transition: transform 0.2s;
   }
 
+  .navTabs {
+    display: none !important;
+  }
+
   .tab {
     font-size: 12px;
     padding: 0.25rem 0;
   }
 
   .reminderContainer {
-    padding-top: 104px;
+    padding-top: 68px !important;
     padding-left: 1rem;
     padding-right: 1rem;
   }
@@ -741,8 +778,8 @@
   }
 
   .mainContent {
-    padding: 0 1rem 4rem;
-    gap: 2rem;
+    padding: 0 1rem 96px !important;
+    gap: 1.5rem;
   }
 
   .featuredCard {
@@ -812,5 +849,158 @@
   .ticketActionBtn {
     flex: 1;
     justify-content: center;
+  }
+}
+
+/* LIGHT MODE THEME OVERRIDES */
+.containerLight {
+  background-color: #f8fafc !important;
+  background-image: 
+    radial-gradient(circle at 50% -100px, rgba(220, 20, 60, 0.12) 0%, rgba(248, 250, 252, 0) 65%),
+    radial-gradient(circle at 90% 500px, rgba(220, 20, 60, 0.05) 0%, rgba(248, 250, 252, 0) 50%) !important;
+  color: #0f172a !important;
+}
+
+.containerLight .navbar {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.containerLight .logoText {
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.containerLight .navTabs {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.containerLight .tab {
+  color: #64748b !important;
+}
+
+.containerLight .tab:hover {
+  color: #0f172a !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.containerLight .activeTab {
+  color: #ffffff !important;
+  background: #dc143c !important;
+  border-color: #dc143c !important;
+}
+
+.containerLight .reminderCard {
+  background: linear-gradient(135deg, rgba(220, 20, 60, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
+  border: 1px solid rgba(220, 20, 60, 0.25) !important;
+  border-left: 5px solid #dc143c !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+.containerLight .reminderTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .reminderSub {
+  color: #64748b !important;
+}
+
+.containerLight .featuredCard {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+.containerLight .featuredTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .pill {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+.containerLight .eventCard {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+.containerLight .eventCard:hover {
+  background: #ffffff !important;
+  border-color: rgba(220, 20, 60, 0.4) !important;
+  box-shadow: 0 20px 40px rgba(220, 20, 60, 0.12) !important;
+}
+
+.containerLight .cardTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .pillSmall {
+  color: #64748b !important;
+}
+
+.containerLight .cardFooter {
+  color: #0f172a !important;
+}
+
+/* Light mode overrides for Registered Events Tab */
+.containerLight .registeredHeader {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.containerLight .registeredTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .registeredSub {
+  color: #64748b !important;
+}
+
+.containerLight .ticketPass {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-left: 4px solid var(--crimson) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+.containerLight .ticketPass:hover {
+  border-color: rgba(220, 20, 60, 0.4) !important;
+  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.12) !important;
+}
+
+.containerLight .ticketTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .ticketMetaChip {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #334155 !important;
+}
+
+.containerLight .ticketDivider {
+  border-right: 2px dashed rgba(0, 0, 0, 0.12) !important;
+}
+
+.containerLight .ticketBadgeIcon {
+  background: rgba(220, 20, 60, 0.08) !important;
+}
+
+.containerLight .emptyTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .emptyDesc {
+  color: #64748b !important;
+}
+
+@media (max-width: 768px) {
+  .containerLight .ticketDivider {
+    border-right: none !important;
+    border-top: 2px dashed rgba(0, 0, 0, 0.12) !important;
   }
 }
