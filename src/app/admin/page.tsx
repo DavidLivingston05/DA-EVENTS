@@ -962,6 +962,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleQuickRegisterUserToEvent = async (userObj: any, eventId: string) => {
+    try {
+      const res = await fetch(`/api/admin/events/${eventId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userObj._id,
+          additionalCount: 0,
+          guestNames: '',
+          status: 'Registered'
+        })
+      });
+      if (res.ok) {
+        handleSelectUser(userObj);
+      }
+    } catch (err) {
+      console.error('Failed to quick register user', err);
+    }
+  };
+
   const handleOpenEditEvent = (event: any) => {
     setEditEventId(event._id);
     setEditEventName(event.eventName);
@@ -1377,22 +1397,80 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
-                    <div className={styles.eventsGrid}>
-                      <div>
-                        <h4 className={styles.eventsSectionTitle}>Upcoming Events</h4>
-                        {!userDetails ? (
-                          <div className={styles.noEvents}>Loading...</div>
-                        ) : userDetails.upcoming.length === 0 ? (
-                          <div className={styles.noEvents}>No upcoming registrations.</div>
-                        ) : (
-                          userDetails.upcoming.map(ev => (
-                            <div key={ev._id} className={styles.eventCard}>
-                              <h4 style={{ margin: '0 0 0.25rem' }}>{ev.eventName}</h4>
-                              <p style={{ margin: 0, color: 'var(--crimson)', fontSize: '0.85rem' }}>{ev.date} &bull; {ev.time}</p>
-                            </div>
-                          ))
-                        )}
-                      </div>
+                    <div style={{ marginTop: '1.25rem' }}>
+                      <h4 className={styles.eventsSectionTitle} style={{ marginBottom: '0.75rem' }}>
+                        Upcoming Events ({activeEvents.length})
+                      </h4>
+                      {!userDetails ? (
+                        <div className={styles.noEvents}>Loading events...</div>
+                      ) : activeEvents.length === 0 ? (
+                        <div className={styles.noEvents}>No upcoming events scheduled.</div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
+                          {activeEvents.map(ev => {
+                            const registeredEv = userDetails.upcoming.find((uEv: any) => uEv._id === ev._id);
+                            const isReg = !!registeredEv;
+
+                            return (
+                              <div
+                                key={ev._id}
+                                style={{
+                                  background: isReg ? 'rgba(48,209,88,0.06)' : 'rgba(255,255,255,0.03)',
+                                  border: isReg ? '1px solid rgba(48,209,88,0.25)' : '1px solid rgba(255,255,255,0.08)',
+                                  borderRadius: '12px',
+                                  padding: '12px 14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: '10px'
+                                }}
+                              >
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div style={{ fontWeight: 700, fontSize: '14px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {ev.eventName}
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+                                    {ev.date} &bull; {formatTimeWithAmPm(ev.time)}
+                                  </div>
+                                </div>
+
+                                {isReg ? (
+                                  <span style={{
+                                    background: 'rgba(48,209,88,0.15)',
+                                    color: '#30d158',
+                                    border: '1px solid rgba(48,209,88,0.3)',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    padding: '4px 10px',
+                                    borderRadius: '12px',
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    ✓ Registered
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleQuickRegisterUserToEvent(selectedUser, ev._id)}
+                                    style={{
+                                      background: 'var(--crimson, #dc143c)',
+                                      color: '#fff',
+                                      border: 'none',
+                                      fontSize: '11px',
+                                      fontWeight: 700,
+                                      padding: '6px 12px',
+                                      borderRadius: '12px',
+                                      cursor: 'pointer',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    + Register
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
