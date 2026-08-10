@@ -49,10 +49,18 @@ textarea,
   button:active, 
   a:active, 
   [role="button"]:active {
-    opacity: 0.85;
-    transform: scale(0.98);
-    transition: transform 0.1s ease, opacity 0.1s ease;
+    opacity: 0.88;
+    transform: scale3d(0.98, 0.98, 1);
+    transition: transform 0.08s ease, opacity 0.08s ease;
   }
+}
+
+/* GPU Hardware Acceleration & Smooth 120 FPS Scrolling for Mobile */
+button, input, select, textarea, .tilt-card, [class*="modalContent"], [class*="card"], [class*="eventCard"] {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Lightweight mobile backdrop filters for 120 FPS lag-free scrolling */

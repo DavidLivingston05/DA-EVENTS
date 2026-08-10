@@ -127,6 +127,9 @@ export default function AdminDashboard() {
   useScrollReveal();
 
   useEffect(() => {
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
     let mouseX = 0;
     let mouseY = 0;
     let scrollY = 0;
