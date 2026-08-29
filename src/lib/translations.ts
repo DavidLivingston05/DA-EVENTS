@@ -4,9 +4,9 @@ export type Theme = 'dark' | 'light';
 export const translations = {
   en: {
     appName: "Rose of Sharon IPC Church",
-    allEvents: "Upcoming Events & Prayer Gatherings",
-    myRegistrations: "My Registered Events",
-    weeklySchedule: "Weekly Service Schedule",
+    allEvents: "Gatherings",
+    myRegistrations: "My Passes",
+    weeklySchedule: "Schedule",
     signIn: "Sign In",
     logout: "Logout",
     searchPlaceholder: "🔍 Search prayer meetings, services, or events...",
@@ -79,9 +79,9 @@ export const translations = {
   },
   ta: {
     appName: "ரோஸ் ஆஃப் ஷாரோன் ஐ.பி.சி சபை",
-    allEvents: "ஜெபக் கூட்டங்கள் & நிகழ்வுகள்",
-    myRegistrations: "எனது பதிவுகள்",
-    weeklySchedule: "வாராந்திர ஆராதனை அட்டவணை",
+    allEvents: "நிகழ்வுகள்",
+    myRegistrations: "எனது பாஸ்கள்",
+    weeklySchedule: "அட்டவணை",
     signIn: "உள்நுழைக",
     logout: "வெளியேறு",
     searchPlaceholder: "🔍 ஜெபக் கூட்டங்கள், ஆராதனை அல்லது தேதியைத் தேடுங்கள்...",

@@ -269,13 +269,13 @@ export default function UserDashboard() {
             className={`${styles.tab} ${activeTab === 'all' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('all')}
           >
-            🗓️ {t.allEvents} ({upcomingEvents.length})
+            🗓️ {t.allEvents}
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'registered' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('registered')}
           >
-            🎟️ {t.myRegistrations} ({upcomingRegisteredEvents.length})
+            🎟️ {t.myRegistrations} {upcomingRegisteredEvents.length > 0 && `(${upcomingRegisteredEvents.length})`}
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'schedule' ? styles.activeTab : ''}`}
@@ -287,6 +287,22 @@ export default function UserDashboard() {
 
         {/* Right Controls */}
         <div className={styles.profileArea}>
+          {/* Admin Dashboard Quick Link */}
+          {currentUser?.role === 'admin' && (
+            <Link
+              href="/admin"
+              className={styles.headerBtn}
+              style={{
+                background: 'rgba(225, 29, 72, 0.15)',
+                borderColor: 'rgba(225, 29, 72, 0.4)',
+                color: '#fb7185',
+                textDecoration: 'none'
+              }}
+            >
+              🏛️ Admin Panel
+            </Link>
+          )}
+
           {/* Language Switcher */}
           <button
             type="button"
@@ -340,6 +356,18 @@ export default function UserDashboard() {
 
                     <div className={styles.profileDropdownDivider} />
 
+                    {currentUser?.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        className={styles.profileDropdownItem}
+                        style={{ textDecoration: 'none', color: '#fb7185' }}
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <span style={{ fontSize: '15px' }}>🏛️</span>
+                        Admin Dashboard
+                      </Link>
+                    )}
+
                     <button 
                       className={styles.profileDropdownItem}
                       onClick={() => {
@@ -348,7 +376,7 @@ export default function UserDashboard() {
                       }}
                     >
                       <span style={{ fontSize: '15px' }}>🎟️</span>
-                      {t.myRegistrations} ({upcomingRegisteredEvents.length})
+                      {t.myRegistrations} {upcomingRegisteredEvents.length > 0 && `(${upcomingRegisteredEvents.length})`}
                     </button>
 
                     <button 
@@ -370,65 +398,36 @@ export default function UserDashboard() {
         </div>
       </nav>
 
-      {/* Hero Welcome & Reminder Spotlight */}
-      <div className={styles.reminderContainer}>
-        <div className={`reveal ${styles.reminderCard}`}>
-          <div className={styles.reminderLeft}>
-            {currentUser && (
-              <div style={{ fontSize: '13px', fontWeight: 600, color: theme === 'light' ? '#64748b' : '#a1a1aa', marginBottom: '4px' }}>
-                Welcome back, <strong>{currentUser.name}</strong>! 🙏
+      {/* Hero Welcome & Reminder Spotlight (Only shown when user has an active pass) */}
+      {upcomingRegisteredEvent && (
+        <div className={styles.reminderContainer}>
+          <div className={`reveal ${styles.reminderCard}`}>
+            <div className={styles.reminderLeft}>
+              <span className={styles.reminderBadge}>⏰ YOUR CONFIRMED PASS</span>
+              <h3 className={styles.reminderTitle}>
+                {upcomingRegisteredEvent.eventName}
+              </h3>
+              <div className={styles.reminderMetaRow}>
+                <span>📅 {formatDate(upcomingRegisteredEvent.date)}</span>
+                <span>⏰ {formatTimeWithAmPm(upcomingRegisteredEvent.time)}</span>
+                <span>📍 {upcomingRegisteredEvent.locationAddress}</span>
               </div>
-            )}
+            </div>
 
-            {upcomingRegisteredEvent ? (
-              <>
-                <span className={styles.reminderBadge}>⏰ NEXT UPCOMING GATHERING</span>
-                <h3 className={styles.reminderTitle}>
-                  {upcomingRegisteredEvent.eventName}
-                </h3>
-                <div className={styles.reminderMetaRow}>
-                  <span>📅 {formatDate(upcomingRegisteredEvent.date)}</span>
-                  <span>⏰ {formatTimeWithAmPm(upcomingRegisteredEvent.time)}</span>
-                  <span>📍 {upcomingRegisteredEvent.locationAddress}</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <span className={styles.reminderBadge}>🗓 JOIN US IN WORSHIP & PRAYER</span>
-                <h3 className={styles.reminderTitle}>
-                  Explore Church Services & Special Gatherings
-                </h3>
-                <p className={styles.reminderSub}>
-                  Find prayer meetings, Sunday worship, and youth fellowships. RSVP with 1 tap!
-                </p>
-              </>
-            )}
-          </div>
-
-          <div className={styles.reminderActionArea}>
-            {upcomingRegisteredEvent ? (
+            <div className={styles.reminderActionArea}>
               <button
                 className={styles.reminderBtn}
                 onClick={() => router.push(`/home/events/${upcomingRegisteredEvent._id}`)}
               >
                 🎟️ View Entry Pass &rarr;
               </button>
-            ) : (
-              <button
-                className={styles.reminderBtn}
-                onClick={() => {
-                  if (featuredEvent) router.push(`/home/events/${featuredEvent._id}`);
-                }}
-              >
-                ✨ Browse Gatherings &rarr;
-              </button>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Area */}
-      <main className={styles.mainContent}>
+      <main className={styles.mainContent} style={{ paddingTop: upcomingRegisteredEvent ? '1.5rem' : '84px' }}>
         {/* Search & Category Filter Bar */}
         {activeTab === 'all' && (
           <div className={styles.filterSection}>
