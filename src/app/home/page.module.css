@@ -2,65 +2,78 @@
   min-height: 100vh;
   background-color: #09090b;
   background-image: 
-    radial-gradient(circle at 50% -100px, rgba(220, 20, 60, 0.25) 0%, rgba(9, 9, 11, 0) 65%),
-    radial-gradient(circle at 90% 500px, rgba(220, 20, 60, 0.08) 0%, rgba(9, 9, 11, 0) 50%);
-  color: #f4f8fb;
-  font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    radial-gradient(ellipse 70% 40% at 50% -10%, rgba(225, 29, 72, 0.15) 0%, rgba(9, 9, 11, 0) 70%),
+    radial-gradient(circle at 85% 450px, rgba(225, 29, 72, 0.04) 0%, rgba(9, 9, 11, 0) 50%);
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
 }
 
-/* Navigation Bar */
+/* ── Fixed Top Header ── */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 64px;
-  padding: 0 3rem;
-  background: rgba(12, 12, 16, 0.82);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  padding: 0 2rem;
+  background: rgba(12, 12, 16, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 999;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logoArea {
   display: flex;
   align-items: center;
+  gap: 10px;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.logoArea:hover {
+  opacity: 0.9;
+}
+
+.churchBadgeIcon {
+  font-size: 22px;
+  filter: drop-shadow(0 2px 8px rgba(225, 29, 72, 0.4));
 }
 
 .logoText {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
 }
 
 .navTabs {
   display: flex;
-  gap: 1.5rem;
+  gap: 6px;
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 4px 12px;
+  padding: 4px;
   border-radius: 980px;
 }
 
 .tab {
   background: transparent;
   border: none;
-  color: #a1a1aa;
-  font-size: 14px;
-  font-weight: 500;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 0.4rem 0.85rem;
-  border-radius: 20px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 6px 16px;
+  border-radius: 980px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tab:hover {
@@ -69,73 +82,108 @@
 }
 
 .activeTab {
-  color: #ffffff;
-  background: rgba(220, 20, 60, 0.28) !important;
-  border: 1px solid rgba(220, 20, 60, 0.5);
+  color: #ffffff !important;
+  background: #e11d48 !important;
   font-weight: 700;
-  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.3);
+  box-shadow: 0 2px 12px rgba(225, 29, 72, 0.4);
 }
 
 .profileArea {
   display: flex;
   align-items: center;
+  gap: 10px;
   position: relative;
 }
 
+.headerBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 980px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.headerBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.signInBtn {
+  background: #e11d48;
+  color: #fff;
+  padding: 7px 18px;
+  border-radius: 980px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.signInBtn:hover {
+  background: #be123c;
+  transform: translateY(-1px);
+}
+
 .profileCircle {
-  width: 32px;
-  height: 32px;
-  background-color: #dc143c;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 0 16px rgba(220, 20, 60, 0.4);
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.35);
 }
 
 .profileCircle:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 24px rgba(220, 20, 60, 0.6);
+  transform: scale(1.06);
 }
 
 .profileDropdown {
   position: absolute;
-  top: calc(100% + 14px);
+  top: calc(100% + 12px);
   right: 0;
   width: 240px;
-  background: rgba(20, 20, 25, 0.95);
+  background: rgba(18, 18, 24, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  padding: 0.75rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border-radius: 18px;
+  padding: 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
   z-index: 1000;
 }
 
 .profileDropdownHeader {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.5rem 0.75rem;
+  gap: 10px;
+  padding: 6px 8px 10px;
 }
 
 .profileDropdownAvatar {
   width: 36px;
   height: 36px;
-  background: #dc143c;
+  background: #e11d48;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: 800;
+  font-size: 15px;
   color: #fff;
   flex-shrink: 0;
 }
@@ -143,21 +191,20 @@
 .profileDropdownDivider {
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
-  margin: 0.25rem 0;
+  margin: 4px 0;
 }
 
 .profileDropdownItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.75rem;
-  border-radius: 8px;
-  color: #f4f8fb;
-  font-weight: 500;
-  font-size: 0.9rem;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #f8fafc;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
-  text-decoration: none;
   border: none;
   background: transparent;
   width: 100%;
@@ -165,45 +212,37 @@
 }
 
 .profileDropdownItem:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .profileDropdownLogout {
-  color: #dc143c;
-  font-weight: 600;
+  color: #fb7185;
 }
 
 .profileDropdownLogout:hover {
-  background: rgba(220, 20, 60, 0.12);
+  background: rgba(225, 29, 72, 0.12);
 }
 
-/* Straight Horizontal Reminder Card */
+/* ── Hero Spotlight Banner ── */
 .reminderContainer {
-  padding-top: 88px; /* offset fixed navbar */
-  max-width: 1440px;
+  padding-top: 84px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .reminderCard {
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.14) 0%, rgba(20, 20, 25, 0.85) 100%);
-  border: 1px solid rgba(220, 20, 60, 0.3);
-  border-left: 5px solid #dc143c;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.1) 0%, rgba(20, 20, 26, 0.85) 100%);
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  border-left: 4px solid #e11d48;
   border-radius: 20px;
-  padding: 1.5rem 2.25rem;
+  padding: 1.5rem 1.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1.5rem;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  margin-top: 1rem;
-}
-
-.reminderCard:hover {
-  border-color: rgba(220, 20, 60, 0.6);
-  box-shadow: 0 16px 50px rgba(220, 20, 60, 0.2);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
 
 .reminderLeft {
@@ -212,125 +251,276 @@
 
 .reminderBadge {
   display: inline-block;
-  color: #dc143c;
+  color: #fb7185;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 0.35rem;
+  margin-bottom: 4px;
 }
 
 .reminderTitle {
-  font-size: 19px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: #fff;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
+}
+
+.reminderMetaRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #cbd5e1;
+  font-weight: 500;
 }
 
 .reminderSub {
-  font-size: 14px;
-  color: #a1a1aa;
+  font-size: 13px;
+  color: #94a3b8;
   margin: 0;
+  line-height: 1.4;
+}
+
+.reminderActionArea {
+  flex-shrink: 0;
 }
 
 .reminderBtn {
-  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
+  background: #e11d48;
   color: #fff;
   border: none;
-  padding: 0.85rem 1.75rem;
+  padding: 11px 22px;
   border-radius: 980px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.4);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 20px rgba(220, 20, 60, 0.4);
 }
 
 .reminderBtn:hover {
+  background: #be123c;
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(220, 20, 60, 0.6);
 }
 
-/* Main Content */
+/* ── Main Content Container ── */
 .mainContent {
-  max-width: 1440px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 2rem 6rem;
+  padding: 1.5rem 1.5rem 6rem;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
-  position: relative;
-  z-index: 2;
+  gap: 1.75rem;
 }
 
-/* Featured Card */
+/* ── Filter & Search Section ── */
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.searchWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.searchInput {
+  width: 100%;
+  background: #141419;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 13px 40px 13px 42px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2);
+}
+
+.clearSearchBtn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #86868b;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.categoryChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.catChip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  padding: 6px 14px;
+  border-radius: 980px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.catChip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.catChipActive {
+  background: rgba(225, 29, 72, 0.15);
+  border-color: rgba(225, 29, 72, 0.5);
+  color: #fb7185;
+  font-weight: 700;
+}
+
+/* ── Featured Card ── */
 .featuredCard {
-  background: linear-gradient(135deg, rgba(26, 26, 32, 0.95) 0%, rgba(16, 16, 20, 0.98) 100%);
+  background: linear-gradient(135deg, rgba(22, 22, 28, 0.95) 0%, rgba(14, 14, 18, 0.98) 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 24px;
-  padding: 3.5rem;
+  padding: 2.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
-  transform-style: preserve-3d;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5);
 }
 
 .featuredCard:hover {
-  transform: translateY(-4px) scale(1.008);
-  border-color: rgba(220, 20, 60, 0.5);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(220, 20, 60, 0.2);
+  transform: translateY(-3px);
+  border-color: rgba(225, 29, 72, 0.5);
+  box-shadow: 0 20px 55px rgba(225, 29, 72, 0.18);
 }
 
 .featuredLeft {
   flex: 1;
-  transform: translateZ(20px);
 }
 
 .badge {
   display: inline-block;
-  background: linear-gradient(135deg, #dc143c 0%, #b01030 100%);
+  background: #e11d48;
   color: #ffffff;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  padding: 5px 14px;
-  border-radius: 20px;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 14px rgba(220, 20, 60, 0.3);
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 980px;
+}
+
+.registeredPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 980px;
+  letter-spacing: 0.04em;
+}
+
+.upcomingPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 980px;
 }
 
 .featuredTitle {
-  font-size: 48px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #f4f8fb;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
 }
 
 .featuredPills {
   display: flex;
-  gap: 1rem;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .pill {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e4e4e7;
-  font-size: 14px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 980px;
+  font-weight: 600;
+}
+
+.cardRsvpBtn {
+  background: #e11d48;
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 980px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+}
+
+.cardRsvpBtn:hover {
+  background: #be123c;
+  transform: scale(1.02);
+}
+
+.cardPassBtn {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  padding: 8px 16px;
+  border-radius: 980px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cardPassBtn:hover {
+  background: rgba(16, 185, 129, 0.2);
 }
 
 .featuredRight {
@@ -338,238 +528,228 @@
   justify-content: center;
   align-items: center;
   padding-left: 2rem;
-  transform: translateZ(40px);
 }
 
 .dateCircle {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(220, 20, 60, 0.3) 0%, rgba(220, 20, 60, 0.1) 100%);
-  border: 2px solid rgba(220, 20, 60, 0.7);
+  width: 110px;
+  height: 110px;
+  border-radius: 20px;
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.25) 0%, rgba(225, 29, 72, 0.06) 100%);
+  border: 1.5px solid rgba(225, 29, 72, 0.5);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #dc143c;
-  box-shadow: 0 0 35px rgba(220, 20, 60, 0.35);
-  padding: 8px;
+  color: #fb7185;
+  box-shadow: 0 0 24px rgba(225, 29, 72, 0.2);
+  padding: 6px;
 }
 
 .dateMonth {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
-  text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .dateDay {
-  font-size: 40px;
-  font-weight: 800;
+  font-size: 34px;
+  font-weight: 900;
   line-height: 1;
+  color: #fff;
   margin: 1px 0;
 }
 
-.dateTime {
+.dateDow {
   font-size: 11px;
   font-weight: 700;
-  color: #f4f8fb;
-  background: rgba(220, 20, 60, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 2px 10px;
-  margin-top: 4px;
-  white-space: nowrap;
+  color: #f43f5e;
+  letter-spacing: 0.05em;
 }
 
-/* Events Grid */
+/* ── Events Grid & Uniform Cards ── */
 .eventsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
 }
 
 .eventCard {
-  background: rgba(18, 18, 22, 0.85);
+  background: rgba(18, 18, 24, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  padding: 28px;
+  padding: 20px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  justify-content: space-between;
+  min-height: 230px;
   backdrop-filter: blur(16px);
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .eventCard:hover {
-  transform: translateY(-8px) scale(1.015);
-  background: rgba(24, 24, 30, 0.95);
-  border-color: rgba(220, 20, 60, 0.5);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 30px rgba(220, 20, 60, 0.25);
+  transform: translateY(-3px);
+  border-color: rgba(225, 29, 72, 0.45);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(225, 29, 72, 0.15);
 }
 
-.cardDate {
-  color: #dc143c;
-  font-size: 13px;
+.cardTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.cardDateBox {
+  background: rgba(225, 29, 72, 0.12);
+  border: 1px solid rgba(225, 29, 72, 0.3);
+  padding: 4px 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.cardDateMonth {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fb7185;
+  letter-spacing: 0.05em;
+}
+
+.cardDateDay {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cardDayOfWeek {
+  font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.75rem;
+  color: #64748b;
 }
 
 .cardTitle {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #f4f8fb;
-  margin: 0 0 1rem 0;
-  line-height: 1.2;
+  color: #f8fafc;
+  margin: 0 0 10px 0;
+  line-height: 1.25;
 }
 
 .cardPills {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
+  gap: 6px;
+  margin-bottom: 14px;
   flex: 1;
 }
 
-.pillSmall {
-  font-size: 14px;
-  color: #86868b;
+.cardInfoRow {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.cardFooterArea {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
-.pillSmall::before {
-  content: "•";
-  color: #dc143c;
-  margin-right: 8px;
-}
-
-.cardFooter {
-  font-size: 14px;
-  color: #f4f8fb;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  transition: color 0.3s ease;
-}
-
-.eventCard:hover .cardFooter {
-  color: #dc143c;
-}
-
-/* Empty State */
-.emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6rem 0;
-  text-align: center;
-}
-
-.emptyIcon {
-  font-size: 64px;
-  margin-bottom: 1rem;
-}
-
-.emptyTitle {
-  font-size: 32px;
+.cardQuickRsvp {
+  width: 100%;
+  background: #e11d48;
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #f4f8fb;
-  margin: 0 0 0.5rem 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 3px 10px rgba(225, 29, 72, 0.3);
 }
 
-.emptyDesc {
-  font-size: 16px;
-  color: #86868b;
-  max-width: 400px;
+.cardQuickRsvp:hover {
+  background: #be123c;
+  transform: scale(1.01);
 }
 
-/* Loading State */
-.loadingGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  padding-top: 2rem;
+.cardFooterConfirmed {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #34d399;
 }
 
-.skeletonCard {
-  background-color: #161617;
-  border: 1px solid #272729;
-  border-radius: 16px;
-  height: 250px;
-}
-
-/* ── Registered Events Ticket Pass Layout ── */
+/* ── Passes Tab Layout ── */
 .registeredHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .registeredTitle {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.02em;
-  margin: 0 0 0.4rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  margin: 0 0 4px 0;
 }
 
 .registeredSub {
-  font-size: 14px;
-  color: #86868b;
+  font-size: 13px;
+  color: #94a3b8;
   margin: 0;
 }
 
 .registeredCountBadge {
-  background: rgba(220, 20, 60, 0.15);
-  border: 1px solid rgba(220, 20, 60, 0.4);
-  color: #fff;
+  background: rgba(225, 29, 72, 0.15);
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  color: #fb7185;
   font-size: 12px;
   font-weight: 700;
-  padding: 0.35rem 0.85rem;
-  border-radius: 20px;
+  padding: 4px 12px;
+  border-radius: 980px;
 }
 
 .ticketList {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .ticketPass {
   background: linear-gradient(135deg, rgba(22, 22, 28, 0.95) 0%, rgba(14, 14, 18, 0.95) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 4px solid var(--crimson);
+  border-left: 4px solid #e11d48;
   border-radius: 20px;
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 1.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 .ticketPass:hover {
-  transform: translateY(-3px);
-  border-color: rgba(220, 20, 60, 0.4);
-  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.15);
+  transform: translateY(-2px);
+  border-color: rgba(225, 29, 72, 0.4);
 }
 
 .ticketLeft {
@@ -579,30 +759,28 @@
 .ticketStatus {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  background: rgba(48, 209, 88, 0.12);
-  border: 1px solid rgba(48, 209, 88, 0.3);
-  color: #30d158;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 980px;
+  margin-bottom: 8px;
 }
 
 .ticketTitle {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.85rem 0;
+  margin: 0 0 8px 0;
 }
 
 .ticketMetaRow {
   display: flex;
-  gap: 0.75rem;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -610,19 +788,19 @@
 .ticketMetaChip {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #e8e8ed;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 5px 12px;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .ticketDivider {
   width: 1px;
-  height: 90px;
+  height: 70px;
   border-right: 2px dashed rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
@@ -631,70 +809,231 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.75rem;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .ticketBadgeIcon {
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
-  background: rgba(220, 20, 60, 0.12);
-  border: 1px solid rgba(220, 20, 60, 0.3);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(225, 29, 72, 0.12);
+  border: 1px solid rgba(225, 29, 72, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
 }
 
 .ticketActionBtn {
-  background: #dc143c;
+  background: #e11d48;
   color: #fff;
   border: none;
-  padding: 0.7rem 1.4rem;
+  padding: 8px 16px;
   border-radius: 980px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  transition: transform 0.15s ease;
   white-space: nowrap;
 }
 
 .ticketPass:hover .ticketActionBtn {
-  background: #e61943;
-  transform: translateX(2px);
+  background: #be123c;
 }
 
-/* Bottom Navigation Bar (Mobile) */
+/* ── Weekly Schedule Layout ── */
+.scheduleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.scheduleCard {
+  background: rgba(18, 18, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scheduleCardToday {
+  background: rgba(225, 29, 72, 0.12);
+  border-color: rgba(225, 29, 72, 0.45);
+}
+
+.scheduleCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.scheduleDayTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.todayBadge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: #e11d48;
+  color: #fff;
+}
+
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scheduleItem {
+  font-size: 13px;
+  color: #cbd5e1;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.scheduleItem:hover {
+  background: rgba(225, 29, 72, 0.15);
+  color: #fff;
+  border-color: rgba(225, 29, 72, 0.35);
+}
+
+.scheduleTime {
+  font-size: 12px;
+  color: #fb7185;
+}
+
+.scheduleDot {
+  opacity: 0.4;
+}
+
+.scheduleName {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* ── Empty & Loading States ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.emptyTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0 0 6px 0;
+}
+
+.emptyDesc {
+  font-size: 14px;
+  color: #86868b;
+  max-width: 360px;
+}
+
+.loadingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.skeletonCard {
+  background-color: #141419;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  height: 220px;
+}
+
+/* ── Mobile Fixed Bottom Dock ── */
 .bottomNav {
   display: none;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .navbar {
     padding: 0 1rem;
-    height: auto;
-    min-height: 56px;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
   }
-
-  .logoText {
-    font-size: 18px;
-  }
-
   .navTabs {
-    display: none; /* Replaced by fixed bottom navigation bar on mobile */
+    display: none !important;
   }
-
-  .container {
-    padding-bottom: 70px;
+  .reminderContainer {
+    padding-top: 72px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .reminderCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  .reminderBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .mainContent {
+    padding: 1rem 1rem 90px;
+  }
+  .featuredCard {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.25rem;
+  }
+  .featuredTitle {
+    font-size: 24px;
+  }
+  .featuredRight {
+    padding-left: 0;
+  }
+  .eventsGrid {
+    grid-template-columns: 1fr;
+  }
+  .ticketPass {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.25rem;
+  }
+  .ticketDivider {
+    width: 100%;
+    height: 1px;
+    border-right: none;
+    border-top: 2px dashed rgba(255, 255, 255, 0.12);
+  }
+  .ticketRight {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ticketActionBtn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
   }
 
   .bottomNav {
@@ -703,19 +1042,17 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: rgba(12, 12, 16, 0.94);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 9999;
     justify-content: space-around;
     align-items: center;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    transform: translateZ(0);
-    will-change: transform;
   }
 
   .bottomNavItem {
@@ -723,16 +1060,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 2px;
     background: transparent;
     border: none;
     color: #888;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     flex: 1;
     height: 100%;
     cursor: pointer;
-    transition: color 0.2s;
   }
 
   .bottomNavItemActive {
@@ -740,141 +1076,29 @@
     font-weight: 700;
   }
 
-  .bottomNavItemActive .bottomNavIcon {
-    color: var(--crimson);
-    transform: scale(1.15);
-  }
-
   .bottomNavIcon {
     font-size: 18px;
-    transition: transform 0.2s;
-  }
-
-  .navTabs {
-    display: none !important;
-  }
-
-  .tab {
-    font-size: 12px;
-    padding: 0.25rem 0;
-  }
-
-  .reminderContainer {
-    padding-top: 68px !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .reminderCard {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.25rem;
-    gap: 1rem;
-  }
-
-  .reminderBtn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .mainContent {
-    padding: 0 1rem 96px !important;
-    gap: 1.5rem;
-  }
-
-  .featuredCard {
-    flex-direction: column;
-    padding: 1.5rem;
-    gap: 1.5rem;
-    align-items: center;
-  }
-
-  .featuredLeft {
-    width: 100%;
-  }
-
-  .featuredRight {
-    padding-left: 0;
-    align-self: center;
-    margin-top: 0.5rem;
-  }
-
-  .featuredTitle {
-    font-size: 26px;
-    margin-bottom: 1rem;
-  }
-
-  .eventsGrid {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  /* Registered Events Ticket Pass Mobile */
-  .registeredHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .registeredTitle {
-    font-size: 22px;
-  }
-
-  .ticketPass {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.25rem;
-    gap: 1.25rem;
-  }
-
-  .ticketTitle {
-    font-size: 20px;
-  }
-
-  .ticketDivider {
-    width: 100%;
-    height: 1px;
-    border-right: none;
-    border-top: 2px dashed rgba(255, 255, 255, 0.12);
-  }
-
-  .ticketRight {
-    width: 100%;
-    align-items: center;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .ticketActionBtn {
-    flex: 1;
-    justify-content: center;
   }
 }
 
-/* LIGHT MODE THEME OVERRIDES */
+/* ── Light Mode Styles ── */
 .containerLight {
   background-color: #f8fafc !important;
-  background-image: 
-    radial-gradient(circle at 50% -100px, rgba(220, 20, 60, 0.12) 0%, rgba(248, 250, 252, 0) 65%),
-    radial-gradient(circle at 90% 500px, rgba(220, 20, 60, 0.05) 0%, rgba(248, 250, 252, 0) 50%) !important;
   color: #0f172a !important;
 }
 
 .containerLight .navbar {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .containerLight .logoText {
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
+  color: #0f172a !important;
 }
 
 .containerLight .navTabs {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
 }
 
 .containerLight .tab {
@@ -888,29 +1112,52 @@
 
 .containerLight .activeTab {
   color: #ffffff !important;
-  background: #dc143c !important;
-  border-color: #dc143c !important;
+  background: #e11d48 !important;
+}
+
+.containerLight .headerBtn {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
 }
 
 .containerLight .reminderCard {
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
-  border: 1px solid rgba(220, 20, 60, 0.25) !important;
-  border-left: 5px solid #dc143c !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.06) 0%, #ffffff 100%) !important;
+  border-color: rgba(225, 29, 72, 0.2) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
 }
 
 .containerLight .reminderTitle {
   color: #0f172a !important;
 }
 
-.containerLight .reminderSub {
+.containerLight .reminderMetaRow {
+  color: #475569 !important;
+}
+
+.containerLight .searchInput {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.containerLight .catChip {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
   color: #64748b !important;
 }
 
+.containerLight .catChipActive {
+  background: rgba(225, 29, 72, 0.12) !important;
+  color: #e11d48 !important;
+  border-color: rgba(225, 29, 72, 0.4) !important;
+}
+
 .containerLight .featuredCard {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08) !important;
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.05) !important;
 }
 
 .containerLight .featuredTitle {
@@ -919,57 +1166,36 @@
 
 .containerLight .pill {
   background: #f1f5f9 !important;
-  border: 1px solid #e2e8f0 !important;
+  border-color: #e2e8f0 !important;
   color: #334155 !important;
 }
 
 .containerLight .eventCard {
   background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
-}
-
-.containerLight .eventCard:hover {
-  background: #ffffff !important;
-  border-color: rgba(220, 20, 60, 0.4) !important;
-  box-shadow: 0 20px 40px rgba(220, 20, 60, 0.12) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04) !important;
 }
 
 .containerLight .cardTitle {
   color: #0f172a !important;
 }
 
-.containerLight .pillSmall {
+.containerLight .cardInfoRow {
   color: #64748b !important;
 }
 
-.containerLight .cardFooter {
+.containerLight .cardDateDay {
   color: #0f172a !important;
 }
 
-/* Light mode overrides for Registered Events Tab */
-.containerLight .registeredHeader {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-.containerLight .registeredTitle {
-  color: #0f172a !important;
-}
-
-.containerLight .registeredSub {
-  color: #64748b !important;
+.containerLight .cardFooterArea {
+  border-top-color: #f1f5f9 !important;
 }
 
 .containerLight .ticketPass {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  border-left: 4px solid var(--crimson) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
-}
-
-.containerLight .ticketPass:hover {
-  border-color: rgba(220, 20, 60, 0.4) !important;
-  box-shadow: 0 16px 40px rgba(220, 20, 60, 0.12) !important;
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
 }
 
 .containerLight .ticketTitle {
@@ -977,30 +1203,43 @@
 }
 
 .containerLight .ticketMetaChip {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
   color: #334155 !important;
 }
 
 .containerLight .ticketDivider {
-  border-right: 2px dashed rgba(0, 0, 0, 0.12) !important;
+  border-color: #e2e8f0 !important;
 }
 
-.containerLight .ticketBadgeIcon {
-  background: rgba(220, 20, 60, 0.08) !important;
+.containerLight .scheduleCard {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.containerLight .scheduleDayTitle {
+  color: #0f172a !important;
+}
+
+.containerLight .scheduleItem {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
 }
 
 .containerLight .emptyTitle {
   color: #0f172a !important;
 }
 
-.containerLight .emptyDesc {
+.containerLight .bottomNav {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-top-color: #e2e8f0 !important;
+}
+
+.containerLight .bottomNavItem {
   color: #64748b !important;
 }
 
-@media (max-width: 768px) {
-  .containerLight .ticketDivider {
-    border-right: none !important;
-    border-top: 2px dashed rgba(0, 0, 0, 0.12) !important;
-  }
+.containerLight .bottomNavItemActive {
+  color: #0f172a !important;
 }

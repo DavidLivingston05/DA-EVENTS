@@ -114,7 +114,7 @@ export default function AdminDashboard() {
 
   // Broadcast & Batch Attendance State
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
-  const [broadcastType, setBroadcastType] = useState<'announcement' | 'reminder'>('announcement');
+  const [broadcastType, setBroadcastType] = useState<'announcement' | 'reminder' | 'care_missed' | 'thanks'>('announcement');
   const [broadcastCopied, setBroadcastCopied] = useState(false);
 
   // Profile Dropdown
@@ -1071,6 +1071,77 @@ export default function AdminDashboard() {
     return counts;
   }, [users]);
 
+  // 1-Click Export Full Member Directory to Excel
+  const exportMembersDirectory = () => {
+    if (users.length === 0) {
+      alert("No members to export.");
+      return;
+    }
+
+    const sheetData: (string | number)[][] = [
+      ['CHURCH MEMBER DIRECTORY - ROSE OF SHARON IPC CHURCH'],
+      [`Exported On: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`],
+      [`Total Active Members: ${users.length}`],
+      [],
+      ['S.No', 'Member Name', 'Contact Number', 'Fellowship Category', 'Role', 'Registered Date']
+    ];
+
+    users.forEach((u, i) => {
+      const regDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US') : 'N/A';
+      sheetData.push([
+        i + 1,
+        u.name || 'N/A',
+        u.contactNumber || 'N/A',
+        u.category || 'General',
+        u.role || 'member',
+        regDate
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [
+      { wch: 8 },  // S.No
+      { wch: 32 }, // Member Name
+      { wch: 22 }, // Contact Number
+      { wch: 22 }, // Category
+      { wch: 14 }, // Role
+      { wch: 18 }  // Registered Date
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Members");
+    XLSX.writeFile(wb, `Church_Member_Directory_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  // Event Preset Templates for quick administrative creation
+  const handleApplyEventPreset = (type: 'sunday' | 'prayer' | 'youth' | 'fasting') => {
+    if (type === 'sunday') {
+      setNewEventName('Sunday Morning Worship Service');
+      setNewEventHour('09');
+      setNewEventMinute('00');
+      setNewEventAmPm('AM');
+      setNewEventLocation('Main Sanctuary, Rose of Sharon IPC');
+    } else if (type === 'prayer') {
+      setNewEventName('Midweek Cottage Prayer');
+      setNewEventHour('07');
+      setNewEventMinute('00');
+      setNewEventAmPm('PM');
+      setNewEventLocation('Church Prayer Hall');
+    } else if (type === 'youth') {
+      setNewEventName('Youth Fellowship & Worship');
+      setNewEventHour('05');
+      setNewEventMinute('00');
+      setNewEventAmPm('PM');
+      setNewEventLocation('Youth Activity Center');
+    } else if (type === 'fasting') {
+      setNewEventName('Fasting & Intercessory Prayer');
+      setNewEventHour('10');
+      setNewEventMinute('00');
+      setNewEventAmPm('AM');
+      setNewEventLocation('Main Sanctuary');
+    }
+  };
+
   // Broadcast text generator
   const getBroadcastMessageText = useCallback(() => {
     const ev = attendanceSelectedEvent || selectedEvent;
@@ -1079,9 +1150,13 @@ export default function AdminDashboard() {
     const timeStr = formatTimeWithAmPm(ev.time);
 
     if (broadcastType === 'announcement') {
-      return `⛪ *UPCOMING EVENT: ${ev.eventName.toUpperCase()}*\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${timeStr}\n📍 *Location:* ${ev.locationAddress}${ev.gmapLink ? `\n🗺️ *Map:* ${ev.gmapLink}` : ''}${ev.travelCost ? `\n💵 *Cost:* ₹${ev.travelCost}` : ''}\n\n👉 *Click here to confirm attendance:*\n${typeof window !== 'undefined' ? window.location.origin : ''}/home/events/${ev._id}`;
+      return `⛪ *UPCOMING GATHERING: ${ev.eventName.toUpperCase()}*\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${timeStr}\n📍 *Location:* ${ev.locationAddress}${ev.gmapLink ? `\n🗺️ *Map:* ${ev.gmapLink}` : ''}${ev.travelCost ? `\n💵 *Cost:* ₹${ev.travelCost}` : ''}\n\n👉 *Click here to view details & confirm your RSVP in 5 seconds:*\n${typeof window !== 'undefined' ? window.location.origin : ''}/home/events/${ev._id}`;
+    } else if (broadcastType === 'reminder') {
+      return `🔔 *REMINDER: ${ev.eventName.toUpperCase()}*\n\nDear Member,\nThis is a friendly reminder for our gathering:\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${timeStr}\n📍 *Location:* ${ev.locationAddress}\n\nWe look forward to worshipping together with you and your family! 🙏`;
+    } else if (broadcastType === 'care_missed') {
+      return `🕊️ *PASTORAL CARE & PRAYER*\n\nDear Member,\nWe missed seeing you at *${ev.eventName}* on ${formattedDate}. We remembered and prayed for you and your family today.\n\nIf you have any prayer requests or need pastoral assistance, please feel free to reach out to us at any time. May God bless and keep you! 🙏\n\n— *Rose of Sharon IPC Church*`;
     } else {
-      return `🔔 *EVENT REMINDER: ${ev.eventName.toUpperCase()}*\n\nDear Member,\nThis is a friendly reminder for our upcoming event:\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${timeStr}\n📍 *Location:* ${ev.locationAddress}\n\nWe look forward to seeing you there! 🙏`;
+      return `🙏 *THANK YOU FOR WORSHIPPING WITH US*\n\nDear Member,\nThank you for worshipping with us at *${ev.eventName}*! May God's peace and blessing remain upon you and your family throughout this week.\n\n"The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you." (Numbers 6:24-25)\n\n— *Rose of Sharon IPC Church*`;
     }
   }, [attendanceSelectedEvent, selectedEvent, broadcastType]);
 
@@ -1242,6 +1317,80 @@ export default function AdminDashboard() {
       {/* Main Content Area */}
       <main className={styles.mainContent}>
         
+        {/* EXECUTIVE ADMINISTRATION KPI DASHBOARD BAR */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '12px',
+          marginBottom: '1.5rem'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
+            border: '1px solid rgba(225, 29, 72, 0.25)',
+            borderRadius: '16px',
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '26px' }}>👥</div>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{users.length}</div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Total Members</div>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            borderRadius: '16px',
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '26px' }}>🗓️</div>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{activeEvents.length}</div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Upcoming Gatherings</div>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            borderRadius: '16px',
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '26px' }}>🎟️</div>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>
+                {events.reduce((sum, ev) => sum + (ev.registeredUsers?.length || 0), 0)}
+              </div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Total Member RSVPs</div>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
+            border: '1px solid rgba(168, 85, 247, 0.25)',
+            borderRadius: '16px',
+            padding: '14px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '26px' }}>🏷️</div>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{categories.length || 1}</div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Active Ministries</div>
+            </div>
+          </div>
+        </div>
+
         {/* USER MANAGEMENT SECTION */}
         {activeTab === 'addUser' && (
           <div className={styles.sectionContent} key="addUser">
@@ -1249,6 +1398,9 @@ export default function AdminDashboard() {
             <div className={`${styles.sectionHeader} ${styles.pageHeader}`}>
               <h2 className={styles.sectionTitle}>User Management</h2>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button className={styles.btnImport} onClick={exportMembersDirectory} title="Download Complete Member Spreadsheet">
+                  📥 Export Directory
+                </button>
                 <button className={styles.btnImport} onClick={() => setIsCategoryModalOpen(true)}>
                   ⚙️ Categories
                 </button>
@@ -1666,6 +1818,44 @@ export default function AdminDashboard() {
               <div className={styles.modalOverlay} onClick={() => setIsEventModalOpen(false)}>
                 <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                   <h3 className={styles.modalTitle}>Create New Event</h3>
+
+                  {/* 1-Click Fast Preset Templates */}
+                  <div style={{ marginBottom: '1.25rem', background: 'rgba(255,255,255,0.03)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      ⚡ 1-Click Service Presets
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEventPreset('sunday')}
+                        style={{ background: 'rgba(225,29,72,0.15)', border: '1px solid rgba(225,29,72,0.35)', color: '#fb7185', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        ⛪ Sunday Worship (9 AM)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEventPreset('prayer')}
+                        style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.35)', color: '#60a5fa', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        🙏 Midweek Prayer (7 PM)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEventPreset('youth')}
+                        style={{ background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.35)', color: '#c084fc', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        ⚡ Youth Fellowship (5 PM)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyEventPreset('fasting')}
+                        style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        🍞 Fasting Prayer (10 AM)
+                      </button>
+                    </div>
+                  </div>
+
                   {eventModalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{eventModalError}</div>}
                   <form onSubmit={handleAddEventSubmit}>
                     <div className={styles.formGroup}>
@@ -2744,14 +2934,14 @@ export default function AdminDashboard() {
             </p>
 
             {/* Broadcast Mode Tabs */}
-            <div style={{ display: 'flex', gap: '6px', background: 'rgba(0,0,0,0.4)', padding: '4px', borderRadius: '8px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', background: 'rgba(0,0,0,0.4)', padding: '6px', borderRadius: '10px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.08)' }}>
               <button
                 type="button"
                 onClick={() => setBroadcastType('announcement')}
                 style={{
-                  flex: 1, padding: '8px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  padding: '8px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', border: 'none', cursor: 'pointer',
                   background: broadcastType === 'announcement' ? 'var(--crimson)' : 'transparent',
-                  color: broadcastType === 'announcement' ? '#fff' : '#888'
+                  color: broadcastType === 'announcement' ? '#fff' : '#94a3b8'
                 }}
               >
                 📣 Announcement & Invite
@@ -2760,12 +2950,34 @@ export default function AdminDashboard() {
                 type="button"
                 onClick={() => setBroadcastType('reminder')}
                 style={{
-                  flex: 1, padding: '8px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  padding: '8px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', border: 'none', cursor: 'pointer',
                   background: broadcastType === 'reminder' ? 'var(--crimson)' : 'transparent',
-                  color: broadcastType === 'reminder' ? '#fff' : '#888'
+                  color: broadcastType === 'reminder' ? '#fff' : '#94a3b8'
                 }}
               >
                 🔔 Attendee Reminder
+              </button>
+              <button
+                type="button"
+                onClick={() => setBroadcastType('care_missed')}
+                style={{
+                  padding: '8px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  background: broadcastType === 'care_missed' ? 'var(--crimson)' : 'transparent',
+                  color: broadcastType === 'care_missed' ? '#fff' : '#94a3b8'
+                }}
+              >
+                🕊️ Pastoral Care / Missed
+              </button>
+              <button
+                type="button"
+                onClick={() => setBroadcastType('thanks')}
+                style={{
+                  padding: '8px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  background: broadcastType === 'thanks' ? 'var(--crimson)' : 'transparent',
+                  color: broadcastType === 'thanks' ? '#fff' : '#94a3b8'
+                }}
+              >
+                🙏 Thanksgiving Note
               </button>
             </div>
 

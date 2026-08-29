@@ -1,22 +1,23 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { translations, Language, Theme } from '@/lib/translations';
 import styles from './page.module.css';
 
-export default function LoginPage() {
+function LoginForm() {
   useScrollReveal();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') || '';
+
   const [mode, setMode] = useState<'login' | 'admin'>('login');
-  const [isAdminRegister, setIsAdminRegister] = useState(false);
   const [name, setName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const [theme, setTheme] = useState<Theme>('dark');
   const [lang, setLang] = useState<Language>('en');
@@ -45,8 +46,7 @@ export default function LoginPage() {
   const t = translations[lang];
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('mode') === 'admin') {
+    if (searchParams.get('mode') === 'admin') {
       setMode('admin');
     }
 
@@ -54,8 +54,8 @@ export default function LoginPage() {
     const checkSession = async () => {
       try {
         const token = localStorage.getItem('auth-token');
-        const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (!token) return;
+        const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
 
         const res = await fetch('/api/auth/me', { headers });
         if (res.ok) {
@@ -63,28 +63,29 @@ export default function LoginPage() {
           if (data.user?.role === 'admin') {
             router.push('/admin');
           } else if (data.user) {
-            router.push('/home');
+            router.push(redirectTarget || '/home');
           }
         }
-      } catch (err) {
-        // Not authenticated, stay on login page
+      } catch {
+        // Not authenticated
       }
     };
     checkSession();
-  }, [router]);
+  }, [router, searchParams, redirectTarget]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (mode === 'login' && !/^\d{10}$/.test(contactNumber)) {
-      setError('Contact number must be exactly 10 digits.');
-      return;
-    }
-
-    if (mode === 'login' && !name.trim()) {
-      setError('Name is required.');
-      return;
+    if (mode === 'login') {
+      if (!name.trim()) {
+        setError('Please enter your full name.');
+        return;
+      }
+      if (!/^\d{10}$/.test(contactNumber.trim())) {
+        setError('Contact number must be exactly 10 digits.');
+        return;
+      }
     }
 
     if (mode === 'admin' && !password.trim()) {
@@ -100,8 +101,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           mode, 
-          name, 
-          contactNumber, 
+          name: name.trim(), 
+          contactNumber: contactNumber.trim(), 
           password 
         }),
       });
@@ -109,126 +110,60 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong');
+        throw new Error(data.error || 'Login failed. Please check your details.');
       }
 
-      // Save token in localStorage as persistent backup
       if (data.token) {
         localStorage.setItem('auth-token', data.token);
       }
 
-      // Success
       if (data.role === 'admin') {
         window.location.href = '/admin';
       } else {
-        window.location.href = '/home';
+        window.location.href = redirectTarget || '/home';
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleModeChange = (newMode: 'login' | 'admin') => {
-    setMode(newMode);
-    setError('');
-  };
-
   return (
     <div className={`${styles.container} ${theme === 'light' ? styles.containerLight : ''}`}>
-      {/* Theme and Lang Toggles */}
-      <div style={{ position: 'absolute', top: '24px', right: '24px', display: 'flex', gap: '12px', zIndex: 10 }}>
+      {/* Top Bar Switchers */}
+      <div className={styles.topBar}>
         <button
           onClick={toggleTheme}
-          style={{
-            background: theme === 'light' ? '#f1f5f9' : '#1c1c1e',
-            border: theme === 'light' ? '1px solid #e2e8f0' : '1px solid #2c2c2e',
-            color: theme === 'light' ? '#0f172a' : '#fff',
-            padding: '8px 12px',
-            borderRadius: '20px',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
+          className={styles.pillButton}
         >
           {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
         </button>
         <button
           onClick={toggleLang}
-          style={{
-            background: theme === 'light' ? '#f1f5f9' : '#1c1c1e',
-            border: theme === 'light' ? '1px solid #e2e8f0' : '1px solid #2c2c2e',
-            color: theme === 'light' ? '#0f172a' : '#fff',
-            padding: '8px 12px',
-            borderRadius: '20px',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
+          className={styles.pillButton}
         >
           {lang === 'en' ? 'தமிழ்' : 'English'}
         </button>
       </div>
 
-      {/* Background Orbs */}
-      <div className={styles.orbTopRight}></div>
-      <div className={styles.orbBottomLeft}></div>
-      <div className={styles.orbCenterRight}></div>
-
-      {/* Left Panel */}
-      <div className={styles.leftPanel}>
-        <div className={styles.leftContent}>
-          <h1 className={styles.logoText}>{t.appName}</h1>
-          <p className={styles.tagline}>{t.loginTagline}</p>
-          
-          <div className={styles.features}>
-            <div className={`reveal-left delay-1 ${styles.featureRow}`}>
-              <div className={styles.featureIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h8"/></svg>
-              </div>
-              <span className={styles.featureText}>{t.discoverEvents}</span>
-            </div>
-            <div className={`reveal-left delay-2 ${styles.featureRow}`}>
-              <div className={styles.featureIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              </div>
-              <span className={styles.featureText}>{t.registerInstantly}</span>
-            </div>
-            <div className={`reveal-left delay-3 ${styles.featureRow}`}>
-              <div className={styles.featureIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <span className={styles.featureText}>{t.stayConnected}</span>
-            </div>
-          </div>
-        </div>
-        <div className={styles.bottomGlow}></div>
-      </div>
-
-      {/* Right Panel */}
-      <div className={styles.rightPanel}>
-        {/* Mobile Header Branding */}
-        <div className={styles.mobileHeader}>
-          <div className={styles.mobileLogoBadge}>
-            <span className={styles.churchIcon}>⛪</span>
-            <span className={styles.churchBadgeTitle}>Rose of Sharon IPC Church</span>
-          </div>
-          <p className={styles.mobileSubtitle}>Prayer Meetings & Worship Service Portal</p>
-        </div>
-
+      {/* Centered Clean Login Card */}
+      <div className={styles.centerContainer}>
         <div className={`reveal ${styles.card}`}>
-          <h2 className={styles.title}>{mode === 'login' ? 'Member Access' : 'Admin Access'}</h2>
+          <div className={styles.churchBadge}>
+            <span className={styles.churchIcon}>⛪</span>
+            <span className={styles.churchName}>{t.appName}</span>
+          </div>
+
+          <h1 className={styles.title}>
+            {mode === 'login' ? (lang === 'ta' ? 'உள்நுழைக' : 'Sign In') : (lang === 'ta' ? 'நிர்வாக அணுகல்' : 'Admin Access')}
+          </h1>
           <p className={styles.subtitle}>
             {mode === 'login' 
-              ? 'Enter your Full Name & 10-Digit Mobile Number to sign in or register instantly.'
-              : 'Enter the admin passcode to access church management.'
-            }
+              ? (lang === 'ta' 
+                  ? 'நிகழ்வுகளைப் பார்க்கவும் பதிவு செய்யவும் உங்கள் பெயர் & தொலைபேசி எண்ணை உள்ளிடவும்.'
+                  : 'Enter your name & 10-digit mobile number to view upcoming church events & register.')
+              : 'Enter admin passcode for church management.'}
           </p>
 
           <div className={styles.segmentedControl}>
@@ -239,27 +174,27 @@ export default function LoginPage() {
             <button 
               type="button"
               className={`${styles.segmentButton} ${mode === 'login' ? styles.activeSegment : ''}`}
-              onClick={() => handleModeChange('login')}
+              onClick={() => { setMode('login'); setError(''); }}
             >
-              {t.memberLogin}
+              👤 {t.memberLogin}
             </button>
             <button 
               type="button"
               className={`${styles.segmentButton} ${mode === 'admin' ? styles.activeSegment : ''}`}
-              onClick={() => handleModeChange('admin')}
+              onClick={() => { setMode('admin'); setError(''); }}
             >
-              {t.adminAccess}
+              🔑 {t.adminAccess}
             </button>
           </div>
 
           {error && <div className={styles.errorMsg}>{error}</div>}
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            {mode === 'login' && (
+            {mode === 'login' ? (
               <>
                 <div className={styles.inputWrapper}>
                   <label className={styles.inputLabel}>
-                    👤 Full Name
+                    👤 {t.fullName}
                   </label>
                   <input
                     type="text"
@@ -267,6 +202,7 @@ export default function LoginPage() {
                     className={styles.input}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
                     required
                   />
                 </div>
@@ -276,49 +212,59 @@ export default function LoginPage() {
                   </label>
                   <input
                     type="tel"
-                    placeholder="Enter 10-digit phone (e.g. 9876543210)"
+                    placeholder="e.g. 9876543210"
                     className={styles.input}
                     value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
+                    onChange={(e) => setContactNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     maxLength={10}
+                    autoComplete="tel"
                     required
                   />
                 </div>
               </>
-            )}
-
-            {mode === 'admin' && (
+            ) : (
               <div className={styles.inputWrapper}>
                 <label className={styles.inputLabel}>
-                  🔑 Admin Passcode
+                  🔑 {t.adminPasscode}
                 </label>
                 <input
                   type="password"
-                  placeholder="Enter admin passcode (JESUSLOVESYOU)"
+                  placeholder="Enter admin passcode"
                   className={styles.input}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                   required
                 />
               </div>
             )}
 
             <button type="submit" className={styles.submitBtn} disabled={isLoading}>
-              {isLoading ? <div className={styles.spinner}></div> : t.continueBtn}
+              {isLoading ? (
+                <div className={styles.spinner} />
+              ) : (
+                mode === 'login' ? 'Sign In & View Events →' : 'Sign In as Admin →'
+              )}
             </button>
           </form>
-          
-          <div className={styles.bottomToggle}>
-            <button 
-              type="button" 
-              className={styles.adminToggleLink}
-              onClick={() => handleModeChange(mode === 'login' ? 'admin' : 'login')}
-            >
-              {mode === 'login' ? t.areYouAdmin : t.memberLogin}
-            </button>
+
+          <div className={styles.footerNote}>
+            <span>🔒 Secure & instant access for church members & guests</span>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070709', color: '#fff' }}>
+        <div style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.2)', borderTopColor: '#dc143c', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
