@@ -29,6 +29,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [isRegistering, setIsRegistering] = useState(false);
   const [registerMsg, setRegisterMsg] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [copiedInvite, setCopiedInvite] = useState(false);
   const [theme, setTheme] = useState<Theme>('dark');
   const [lang, setLang] = useState<Language>('en');
 
@@ -181,11 +182,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const getEventShareText = () => {
+    if (!event) return '';
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    return `⛪ Join us for *${event.eventName}*!\n\n📅 *Date:* ${formatDate(event.date)}\n⏰ *Time:* ${formatTimeWithAmPm(event.time)}\n📍 *Location:* ${event.locationAddress}${event.gmapLink ? `\n🗺️ *Map:* ${event.gmapLink}` : ''}\n\n👉 *Click link to register & confirm attendance:*\n${shareUrl}`;
+  };
+
   const handleWhatsAppShare = () => {
-    if (!event) return;
-    const shareText = `⛪ Join us for *${event.eventName}*!\n\n📅 *Date:* ${formatDate(event.date)}\n⏰ *Time:* ${formatTimeWithAmPm(event.time)}\n📍 *Location:* ${event.locationAddress}\n\n👉 Click link to register & confirm attendance:\n${window.location.href}`;
-    const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    const shareText = getEventShareText();
+    if (!shareText) return;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank');
+  };
+
+  const handleCopyInvite = () => {
+    const shareText = getEventShareText();
+    if (!shareText) return;
+    navigator.clipboard.writeText(shareText);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 2500);
   };
 
   const handleOpenNavigation = () => {
@@ -318,6 +333,29 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               }}
             >
               {t.shareWhatsApp}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCopyInvite}
+              style={{
+                background: copiedInvite 
+                  ? 'rgba(48, 209, 88, 0.2)' 
+                  : (theme === 'light' ? 'rgba(241, 245, 249, 0.9)' : 'rgba(255, 255, 255, 0.08)'),
+                color: copiedInvite ? '#30d158' : (theme === 'light' ? '#0f172a' : '#fff'),
+                border: theme === 'light' ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.12)',
+                padding: '8px 16px',
+                borderRadius: '980px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {copiedInvite ? '✓ Copied Invite!' : '📋 Copy Invite'}
             </button>
 
             <a
