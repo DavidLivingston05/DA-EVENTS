@@ -1902,7 +1902,7 @@ export default function AdminDashboard() {
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                     <h3 className={styles.modalTitle} style={{ margin: 0 }}>Create New Event</h3>
                     <button
                       type="button"
@@ -1911,43 +1911,6 @@ export default function AdminDashboard() {
                     >
                       ✕
                     </button>
-                  </div>
-
-                  {/* 1-Click Fast Preset Templates */}
-                  <div style={{ marginBottom: '1.25rem', background: 'rgba(255,255,255,0.03)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
-                      ⚡ 1-Click Service Presets
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyEventPreset('sunday')}
-                        style={{ background: 'rgba(225,29,72,0.15)', border: '1px solid rgba(225,29,72,0.35)', color: '#fb7185', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        ⛪ Sunday Worship (9 AM)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyEventPreset('prayer')}
-                        style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.35)', color: '#60a5fa', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        🙏 Midweek Prayer (7 PM)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyEventPreset('youth')}
-                        style={{ background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.35)', color: '#c084fc', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        ⚡ Youth Fellowship (5 PM)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyEventPreset('fasting')}
-                        style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', padding: '5px 10px', borderRadius: '980px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        🍞 Fasting Prayer (10 AM)
-                      </button>
-                    </div>
                   </div>
 
                   {eventModalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{eventModalError}</div>}
