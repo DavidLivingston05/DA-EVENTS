@@ -98,11 +98,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 5rem;
-  background: rgba(5, 5, 5, 0.6);
+  padding: 1rem 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: rgba(12, 12, 16, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
 }
 
 .logoArea {
@@ -112,33 +116,31 @@
 }
 
 .logoIcon {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #fff;
-  border-radius: 50%;
+  font-size: 20px;
 }
 
 .logoText {
-  font-family: var(--font-playfair), serif;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-inter), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: #fff;
+  letter-spacing: -0.01em;
 }
 
 .navTabs {
   display: flex;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
 .tab {
   background: transparent;
   border: none;
-  color: #888;
-  font-size: 1rem;
-  font-weight: 500;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   padding: 0.5rem 0;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
   position: relative;
 }
 
@@ -148,6 +150,7 @@
 
 .activeTab {
   color: #fff;
+  font-weight: 700;
 }
 
 .activeTab::after {
@@ -217,7 +220,7 @@
   gap: 0.75rem;
   padding: 0.7rem 0.75rem;
   border-radius: 8px;
-  color: #dc143c;
+  color: #fb7185;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
@@ -231,16 +234,17 @@
 }
 
 .profileCircle {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   background: var(--crimson);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #fff;
+  cursor: pointer;
 }
 
 /* Animations */
@@ -261,16 +265,19 @@
 /* Main Content */
 .mainContent {
   width: 100%;
-  padding: 3rem 5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 2rem 5rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   min-height: 60vh;
+  box-sizing: border-box;
 }
 
 .placeholderText {
-  font-size: 2.5rem;
-  font-family: var(--font-playfair), serif;
+  font-size: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-inter), sans-serif;
   color: #fff;
   opacity: 0.8;
   text-align: center;
@@ -283,41 +290,47 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: var(--font-playfair), serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-inter), sans-serif;
+  color: #fff;
 }
 
 .btnImport {
-  background: transparent;
-  color: var(--crimson);
-  border: 1px solid var(--crimson);
-  padding: 0.7rem 1.5rem;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-right: 1rem;
 }
 .btnImport:hover {
-  background: rgba(220, 20, 60, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btnAddUser {
   background: var(--crimson);
   color: #fff;
   border: none;
-  padding: 0.7rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+  transition: transform 0.15s ease, background 0.15s ease;
 }
 .btnAddUser:hover {
+  background: #be123c;
   transform: translateY(-2px);
 }
 

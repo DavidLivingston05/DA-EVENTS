@@ -1319,74 +1319,79 @@ export default function AdminDashboard() {
         
         {/* EXECUTIVE ADMINISTRATION KPI DASHBOARD BAR */}
         <div style={{
+          width: '100%',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '12px',
-          marginBottom: '1.5rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '16px',
+          marginBottom: '2rem'
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
-            border: '1px solid rgba(225, 29, 72, 0.25)',
-            borderRadius: '16px',
-            padding: '14px 18px',
+            background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
+            border: '1px solid rgba(225, 29, 72, 0.3)',
+            borderRadius: '18px',
+            padding: '18px 22px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '14px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ fontSize: '26px' }}>👥</div>
+            <div style={{ fontSize: '32px' }}>👥</div>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{users.length}</div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Total Members</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{users.length}</div>
+              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Total Members</div>
             </div>
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
-            borderRadius: '16px',
-            padding: '14px 18px',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            borderRadius: '18px',
+            padding: '18px 22px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '14px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ fontSize: '26px' }}>🗓️</div>
+            <div style={{ fontSize: '32px' }}>🗓️</div>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{activeEvents.length}</div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Upcoming Gatherings</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{activeEvents.length}</div>
+              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Upcoming Gatherings</div>
             </div>
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
-            borderRadius: '16px',
-            padding: '14px 18px',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '18px',
+            padding: '18px 22px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '14px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ fontSize: '26px' }}>🎟️</div>
+            <div style={{ fontSize: '32px' }}>🎟️</div>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
                 {events.reduce((sum, ev) => sum + (ev.registeredUsers?.length || 0), 0)}
               </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Total Member RSVPs</div>
+              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Total Member RSVPs</div>
             </div>
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(20, 20, 26, 0.7) 100%)',
-            border: '1px solid rgba(168, 85, 247, 0.25)',
-            borderRadius: '16px',
-            padding: '14px 18px',
+            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
+            borderRadius: '18px',
+            padding: '18px 22px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: '14px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
           }}>
-            <div style={{ fontSize: '26px' }}>🏷️</div>
+            <div style={{ fontSize: '32px' }}>🏷️</div>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{categories.length || 1}</div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Active Ministries</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{categories.length || 1}</div>
+              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Active Ministries</div>
             </div>
           </div>
         </div>
@@ -1414,7 +1419,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Search Bar & Category Filter Bar */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
               <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
                 <input
                   type="text"
@@ -1423,9 +1428,9 @@ export default function AdminDashboard() {
                   onChange={(e) => setUserSearchQuery(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    background: 'rgba(0,0,0,0.4)',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: 'rgba(20, 20, 26, 0.8)',
                     border: '1px solid rgba(255,255,255,0.12)',
                     color: '#fff',
                     fontSize: '14px',
@@ -1434,7 +1439,7 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto', maxWidth: '100%' }}>
+              <div style={{ display: 'flex', gap: '6px', background: 'rgba(20, 20, 26, 0.6)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto', maxWidth: '100%' }}>
                 {['All', ...categories.map(c => c.name)].map((cat) => {
                   const count = cat === 'All' ? users.length : (categoryCounts[cat] || 0);
                   return (
@@ -1443,15 +1448,15 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => setSelectedCategoryFilter(cat)}
                       style={{
-                        padding: '6px 12px',
+                        padding: '6px 14px',
                         fontSize: '12px',
-                        fontWeight: 600,
+                        fontWeight: 700,
                         borderRadius: '8px',
                         border: 'none',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
                         background: selectedCategoryFilter === cat ? 'var(--crimson)' : 'transparent',
-                        color: selectedCategoryFilter === cat ? '#fff' : '#888',
+                        color: selectedCategoryFilter === cat ? '#fff' : '#94a3b8',
                         transition: 'all 0.2s'
                       }}
                     >
@@ -1503,7 +1508,24 @@ export default function AdminDashboard() {
               {/* Middle Column: User Details */}
               <div className={`${styles.userDetailsArea} ${styles.userDetailsAreaDesktop}`}>
                 {!selectedUser ? (
-                  <div className={styles.emptyState}>Select a user from the left to view their details.</div>
+                  <div style={{
+                    padding: '3rem 2rem',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    color: '#94a3b8'
+                  }}>
+                    <div style={{ fontSize: '48px', marginBottom: '1rem' }}>👥</div>
+                    <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 700, margin: '0 0 8px' }}>
+                      Church Member Directory
+                    </h3>
+                    <p style={{ maxWidth: '400px', fontSize: '13px', lineHeight: 1.5, margin: 0 }}>
+                      Select any member from the left list to view their registration history, event passes, or register them to upcoming services.
+                    </p>
+                  </div>
                 ) : (
                   <>
                     <div className={styles.detailsHeader}>
