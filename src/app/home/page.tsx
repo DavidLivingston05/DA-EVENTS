@@ -256,14 +256,14 @@ export default function UserDashboard() {
 
   return (
     <div className={`${styles.container} ${theme === 'light' ? styles.containerLight : ''}`}>
-      {/* Navigation Bar */}
+      {/* Sleek Top Navigation Bar */}
       <nav className={styles.navbar}>
         <div className={styles.logoArea} onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
           <span className={styles.churchBadgeIcon}>⛪</span>
           <span className={styles.logoText}>{t.appName}</span>
         </div>
 
-        {/* Center Tabs */}
+        {/* Center Desktop Tabs (Hidden on mobile via CSS) */}
         <div className={styles.navTabs}>
           <button
             className={`${styles.tab} ${activeTab === 'all' ? styles.activeTab : ''}`}
@@ -287,22 +287,6 @@ export default function UserDashboard() {
 
         {/* Right Controls */}
         <div className={styles.profileArea}>
-          {/* Admin Dashboard Quick Link */}
-          {currentUser?.role === 'admin' && (
-            <Link
-              href="/admin"
-              className={styles.headerBtn}
-              style={{
-                background: 'rgba(225, 29, 72, 0.15)',
-                borderColor: 'rgba(225, 29, 72, 0.4)',
-                color: '#fb7185',
-                textDecoration: 'none'
-              }}
-            >
-              🏛️ Admin Panel
-            </Link>
-          )}
-
           {/* Language Switcher */}
           <button
             type="button"
@@ -360,7 +344,7 @@ export default function UserDashboard() {
                       <Link
                         href="/admin"
                         className={styles.profileDropdownItem}
-                        style={{ textDecoration: 'none', color: '#fb7185' }}
+                        style={{ textDecoration: 'none', color: '#fb7185', fontWeight: 700 }}
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <span style={{ fontSize: '15px' }}>🏛️</span>
@@ -398,7 +382,7 @@ export default function UserDashboard() {
         </div>
       </nav>
 
-      {/* Hero Welcome & Reminder Spotlight (Only shown when user has an active pass) */}
+      {/* Hero Pass Spotlight (Only shown when user actually has a confirmed pass) */}
       {upcomingRegisteredEvent && (
         <div className={styles.reminderContainer}>
           <div className={`reveal ${styles.reminderCard}`}>
@@ -427,7 +411,18 @@ export default function UserDashboard() {
       )}
 
       {/* Main Content Area */}
-      <main className={styles.mainContent} style={{ paddingTop: upcomingRegisteredEvent ? '1.5rem' : '84px' }}>
+      <main className={styles.mainContent} style={{ paddingTop: upcomingRegisteredEvent ? '1rem' : '84px' }}>
+        {/* Welcome Header */}
+        <div className={styles.heroHeader}>
+          <h1 className={styles.greetingTitle}>
+            {lang === 'ta' ? 'வணக்கம், ' : 'Welcome, '} 
+            <span className={styles.highlightName}>{currentUser?.name || (lang === 'ta' ? 'அன்பரே' : 'Friend')}</span> 🙏
+          </h1>
+          <p className={styles.greetingSub}>
+            {lang === 'ta' ? 'சபையின் வரவிருக்கும் ஆராதனைகள் & ஜெபக் கூட்டங்கள்' : 'Upcoming worship services, prayer meetings & fellowship gatherings'}
+          </p>
+        </div>
+
         {/* Search & Category Filter Bar */}
         {activeTab === 'all' && (
           <div className={styles.filterSection}>
