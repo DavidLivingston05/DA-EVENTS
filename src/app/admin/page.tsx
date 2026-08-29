@@ -1653,9 +1653,27 @@ export default function AdminDashboard() {
 
             {/* ADD USER MODAL */}
             {isModalOpen && (
-              <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
-                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                  <h3 className={styles.modalTitle}>Add New Member</h3>
+              <div 
+                className={styles.modalOverlay} 
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setIsModalOpen(false);
+                }}
+              >
+                <div 
+                  className={styles.modalContent} 
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className={styles.modalTitle} style={{ margin: 0 }}>Add New Member</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                   {modalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{modalError}</div>}
                   <form onSubmit={handleAddUserSubmit}>
                     <div className={styles.formGroup}>
@@ -1685,7 +1703,7 @@ export default function AdminDashboard() {
                         type="text" 
                         list="add-category-list" 
                         value={newUserCategory} 
-                        onChange={e => setNewUserCategory(e.target.value)}
+                        onChange={e => setNewUserCategory(e.target.value)} 
                         placeholder="Select or type custom category..."
                         style={{
                           background: '#000',
@@ -1715,9 +1733,27 @@ export default function AdminDashboard() {
 
             {/* EDIT USER MODAL */}
             {isEditUserModalOpen && (
-              <div className={styles.modalOverlay} onClick={() => setIsEditUserModalOpen(false)}>
-                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                  <h3 className={styles.modalTitle}>Edit Member Details</h3>
+              <div 
+                className={styles.modalOverlay} 
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setIsEditUserModalOpen(false);
+                }}
+              >
+                <div 
+                  className={styles.modalContent} 
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className={styles.modalTitle} style={{ margin: 0 }}>Edit Member Details</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditUserModalOpen(false)}
+                      style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                   {modalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{modalError}</div>}
                   <form onSubmit={handleEditUserSubmit}>
                     <div className={styles.formGroup}>
@@ -1745,7 +1781,7 @@ export default function AdminDashboard() {
                         type="text" 
                         list="edit-category-list" 
                         value={editUserCategory} 
-                        onChange={e => setEditUserCategory(e.target.value)}
+                        onChange={e => setEditUserCategory(e.target.value)} 
                         placeholder="Select or type custom category..."
                         style={{
                           background: '#000',
@@ -1775,9 +1811,27 @@ export default function AdminDashboard() {
 
             {/* IMPORT MODAL */}
             {isImportModalOpen && (
-              <div className={styles.modalOverlay} onClick={() => setIsImportModalOpen(false)}>
-                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                  <h3 className={styles.modalTitle}>Import Members (Excel)</h3>
+              <div 
+                className={styles.modalOverlay} 
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setIsImportModalOpen(false);
+                }}
+              >
+                <div 
+                  className={styles.modalContent} 
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className={styles.modalTitle} style={{ margin: 0 }}>Import Members (Excel)</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsImportModalOpen(false)}
+                      style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                   {importError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{importError}</div>}
                   <form onSubmit={handleImportSubmit}>
                     <div className={styles.formGroup}>
@@ -1837,9 +1891,27 @@ export default function AdminDashboard() {
 
             {/* CREATE EVENT MODAL */}
             {isEventModalOpen && (
-              <div className={styles.modalOverlay} onClick={() => setIsEventModalOpen(false)}>
-                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                  <h3 className={styles.modalTitle}>Create New Event</h3>
+              <div 
+                className={styles.modalOverlay} 
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setIsEventModalOpen(false);
+                }}
+              >
+                <div 
+                  className={styles.modalContent} 
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className={styles.modalTitle} style={{ margin: 0 }}>Create New Event</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsEventModalOpen(false)}
+                      style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
 
                   {/* 1-Click Fast Preset Templates */}
                   <div style={{ marginBottom: '1.25rem', background: 'rgba(255,255,255,0.03)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -1936,9 +2008,27 @@ export default function AdminDashboard() {
 
             {/* EDIT EVENT MODAL */}
             {isEditEventModalOpen && (
-              <div className={styles.modalOverlay} onClick={() => setIsEditEventModalOpen(false)}>
-                <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                  <h3 className={styles.modalTitle}>Edit Event Details</h3>
+              <div 
+                className={styles.modalOverlay} 
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setIsEditEventModalOpen(false);
+                }}
+              >
+                <div 
+                  className={styles.modalContent} 
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className={styles.modalTitle} style={{ margin: 0 }}>Edit Event Details</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditEventModalOpen(false)}
+                      style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                   {eventModalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{eventModalError}</div>}
                   <form onSubmit={handleEditEventSubmit}>
                     <div className={styles.formGroup}>
@@ -2827,9 +2917,27 @@ export default function AdminDashboard() {
 
       {/* REGISTER MEMBER TO EVENT MODAL (User Management Tab) */}
       {isUserRegEventModalOpen && selectedUser && (
-        <div className={styles.modalOverlay} onClick={() => setIsUserRegEventModalOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>Register Member to Event</h3>
+        <div 
+          className={styles.modalOverlay} 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsUserRegEventModalOpen(false);
+          }}
+        >
+          <div 
+            className={styles.modalContent} 
+            onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 className={styles.modalTitle} style={{ margin: 0 }}>Register Member to Event</h3>
+              <button
+                type="button"
+                onClick={() => setIsUserRegEventModalOpen(false)}
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+              >
+                ✕
+              </button>
+            </div>
             <p style={{ color: '#888', fontSize: '13px', marginBottom: '1rem' }}>
               Registering <strong>{selectedUser.name}</strong> ({selectedUser.contactNumber})
             </p>
@@ -2892,9 +3000,28 @@ export default function AdminDashboard() {
       )}
       {/* MANAGE CATEGORIES MODAL */}
       {isCategoryModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsCategoryModalOpen(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3 className={styles.modalTitle}>Manage Member Categories</h3>
+        <div 
+          className={styles.modalOverlay} 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsCategoryModalOpen(false);
+          }}
+        >
+          <div 
+            className={styles.modalContent} 
+            onClick={e => e.stopPropagation()} 
+            onMouseDown={e => e.stopPropagation()}
+            style={{ maxWidth: '500px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 className={styles.modalTitle} style={{ margin: 0 }}>Manage Member Categories</h3>
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(false)}
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+              >
+                ✕
+              </button>
+            </div>
             <p style={{ color: '#888', fontSize: '13px', marginBottom: '1rem' }}>
               Create custom categories for organizing members (e.g. Volunteers, Seniors, Worship Team).
             </p>
@@ -2948,9 +3075,28 @@ export default function AdminDashboard() {
       )}
       {/* WHATSAPP BROADCAST MODAL */}
       {isBroadcastModalOpen && (attendanceSelectedEvent || selectedEvent) && (
-        <div className={styles.modalOverlay} onClick={() => setIsBroadcastModalOpen(false)}>
-          <div className={styles.modalContent} style={{ maxWidth: '550px' }} onClick={e => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>📢 Event Broadcast Generator</h3>
+        <div 
+          className={styles.modalOverlay} 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsBroadcastModalOpen(false);
+          }}
+        >
+          <div 
+            className={styles.modalContent} 
+            style={{ maxWidth: '550px' }} 
+            onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 className={styles.modalTitle} style={{ margin: 0 }}>📢 Event Broadcast Generator</h3>
+              <button
+                type="button"
+                onClick={() => setIsBroadcastModalOpen(false)}
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px' }}
+              >
+                ✕
+              </button>
+            </div>
             <p style={{ color: '#888', fontSize: '13px', marginBottom: '1rem' }}>
               Generate pre-formatted announcement and reminder messages to share on WhatsApp groups or send to members.
             </p>
