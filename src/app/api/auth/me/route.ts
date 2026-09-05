@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Attendance from '@/models/Attendance';
+import Event from '@/models/Event';
 
 export async function GET(request: Request) {
   try {
@@ -16,7 +18,7 @@ export async function GET(request: Request) {
       }
     }
 
-    if (!token) {
+    if (!token || !mongoose.Types.ObjectId.isValid(token)) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -30,7 +32,7 @@ export async function GET(request: Request) {
     // Fetch user's registered events with optimized field selection
     const attendances = await Attendance.find({ userId: user._id })
       .select('eventId additionalCount guestNames specialNotes status')
-      .populate('eventId')
+      .populate({ path: 'eventId', model: Event })
       .lean();
 
     const registeredEvents = attendances

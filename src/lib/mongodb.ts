@@ -24,11 +24,11 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 20, // Maintain up to 20 warm socket connections
-      minPoolSize: 5,  // Keep 5 warm connections open for 0ms handshake latency
+      maxPoolSize: 10, // Optimized for serverless function scaling
+      minPoolSize: 0,
       socketTimeoutMS: 30000,
-      connectTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {

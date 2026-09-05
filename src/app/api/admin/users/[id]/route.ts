@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const attendances = await Attendance.find({ userId }).populate('eventId').lean();
+    const attendances = await Attendance.find({ userId }).populate({ path: 'eventId', model: Event }).lean();
     
     const registeredEvents = attendances
       .map(att => att.eventId)

@@ -48,6 +48,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Never cache authentication endpoints
+  if (url.pathname.startsWith('/api/auth/')) {
+    return;
+  }
+
   // Handle read-only API GET requests with Network-First, fallback to Cache
   if (url.pathname.startsWith('/api/') && request.method === 'GET') {
     event.respondWith(

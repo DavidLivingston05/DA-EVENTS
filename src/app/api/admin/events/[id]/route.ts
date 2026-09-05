@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Event from '@/models/Event';
 import Attendance from '@/models/Attendance';
+import User from '@/models/User';
 
 function calculateStats(attendances: any[]) {
   const registeredUsers = attendances.map(att => att.userId);
@@ -35,7 +36,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    const rawAttendances = await Attendance.find({ eventId }).populate('userId').lean();
+    const rawAttendances = await Attendance.find({ eventId }).populate({ path: 'userId', model: User }).lean();
     const attendances = rawAttendances.filter(att => att.userId !== null);
     const stats = calculateStats(attendances);
 
@@ -125,7 +126,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       { upsert: true, new: true }
     );
 
-    const rawAttendances = await Attendance.find({ eventId }).populate('userId').lean();
+    const rawAttendances = await Attendance.find({ eventId }).populate({ path: 'userId', model: User }).lean();
     const attendances = rawAttendances.filter(att => att.userId !== null);
     const stats = calculateStats(attendances);
 
@@ -158,7 +159,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       );
     }
 
-    const rawAttendances = await Attendance.find({ eventId }).populate('userId').lean();
+    const rawAttendances = await Attendance.find({ eventId }).populate({ path: 'userId', model: User }).lean();
     const attendances = rawAttendances.filter(att => att.userId !== null);
     const stats = calculateStats(attendances);
 
