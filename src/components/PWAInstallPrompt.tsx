@@ -252,9 +252,9 @@ export default function PWAInstallPrompt() {
 
         .pwa-top-install-btn {
           position: fixed;
-          top: 12px;
-          right: 20px;
-          z-index: 999;
+          top: 14px;
+          right: 180px;
+          z-index: 998;
           display: inline-flex;
           align-items: center;
           gap: 6px;
@@ -268,6 +268,12 @@ export default function PWAInstallPrompt() {
           cursor: pointer;
           backdrop-filter: blur(10px);
           transition: all 0.2s;
+        }
+
+        @media (max-width: 900px) {
+          .pwa-top-install-btn {
+            display: none !important;
+          }
         }
 
         .pwa-top-install-btn:hover {

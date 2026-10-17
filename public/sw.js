@@ -1,4 +1,4 @@
-const CACHE_NAME = 'da-ros-v5-choir-android';
+const CACHE_NAME = 'da-ros-v6-smooth';
 const STATIC_ASSETS = [
   '/',
   '/home',
