@@ -1,9 +1,10 @@
-const CACHE_NAME = 'da-ros-v3';
+const CACHE_NAME = 'da-ros-v5-choir-android';
 const STATIC_ASSETS = [
   '/',
   '/home',
   '/login',
   '/admin',
+  '/choir',
   '/offline.html',
   '/manifest.json',
   '/church_bg.png',

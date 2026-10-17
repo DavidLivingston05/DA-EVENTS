@@ -2,9 +2,14 @@
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { formatTimeWithAmPm, isEventUpcoming } from '@/lib/formatTime';
+import { playAudioFeedback } from '@/lib/soundEffects';
+import CommandPalette from '@/components/CommandPalette';
+import LiveScannerModal from '@/components/LiveScannerModal';
+import AttendanceAnalyticsModal from '@/components/AttendanceAnalyticsModal';
 import styles from './page.module.css';
 
 export default function AdminDashboard() {
@@ -117,8 +122,25 @@ export default function AdminDashboard() {
   const [broadcastType, setBroadcastType] = useState<'announcement' | 'reminder' | 'care_missed' | 'thanks'>('announcement');
   const [broadcastCopied, setBroadcastCopied] = useState(false);
 
+  // High-Tech Feature States: Live Scanner, Command Palette, Analytics Hub
+  const [isLiveScannerOpen, setIsLiveScannerOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+
   // Profile Dropdown
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K listener for Command Palette
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // 3D Parallax Background
   const bgRef = useRef<HTMLDivElement>(null);
@@ -1200,6 +1222,111 @@ export default function AdminDashboard() {
     }
   };
 
+  // High-Tech Live Scanner Check-In Action
+  const handleScannerCheckIn = async (userId: string, additionalCount: number = 0, guestNames: string = '') => {
+    const targetEvent = attendanceSelectedEvent || events[0];
+    if (!targetEvent) {
+      throw new Error('Please select an event to check in attendees.');
+    }
+
+    const res = await fetch(`/api/admin/events/${targetEvent._id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        additionalCount,
+        guestNames,
+        status: 'Present'
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to check in member');
+
+    setAttendanceEventDetails({
+      attendances: data.attendances || [],
+      registeredUsers: data.registeredUsers || [],
+      totalMembers: data.totalMembers || 0,
+      totalGuests: data.totalGuests || 0,
+      totalHeadcount: data.totalHeadcount || 0,
+      presentCount: data.presentCount || 0,
+      absentCount: data.absentCount || 0,
+      registeredCount: data.registeredCount || 0
+    });
+  };
+
+  // Smart Event Creation Presets
+  const applyEventPreset = (presetKey: string) => {
+    if (presetKey === 'sunday_morning') {
+      setNewEventName('Sunday Morning Worship Service');
+      setNewEventHour('09');
+      setNewEventMinute('30');
+      setNewEventAmPm('AM');
+      setNewEventLocation('Rose of Sharon Main Sanctuary');
+      setNewEventCost('0');
+    } else if (presetKey === 'sunday_evening') {
+      setNewEventName('Sunday Evening Gospel Service');
+      setNewEventHour('06');
+      setNewEventMinute('30');
+      setNewEventAmPm('PM');
+      setNewEventLocation('Rose of Sharon Main Sanctuary');
+      setNewEventCost('0');
+    } else if (presetKey === 'friday_fasting') {
+      setNewEventName('Friday Fasting & Deliverance Prayer');
+      setNewEventHour('10');
+      setNewEventMinute('30');
+      setNewEventAmPm('AM');
+      setNewEventLocation('Prayer Hall');
+      setNewEventCost('0');
+    } else if (presetKey === 'youth') {
+      setNewEventName('Youth & Teens Fellowship');
+      setNewEventHour('06');
+      setNewEventMinute('00');
+      setNewEventAmPm('PM');
+      setNewEventLocation('Youth Chapel');
+      setNewEventCost('0');
+    } else if (presetKey === 'cottage') {
+      setNewEventName('Cottage Prayer Gathering');
+      setNewEventHour('07');
+      setNewEventMinute('30');
+      setNewEventAmPm('PM');
+      setNewEventLocation('Member Residence');
+      setNewEventCost('0');
+    }
+  };
+
+  // Instant Next-Week Duplication (copies event and sets date +7 days)
+  const handleDuplicateNextWeek = (event: any) => {
+    if (!event) return;
+    let nextDateStr = '';
+    try {
+      const d = new Date(event.date + 'T00:00:00');
+      d.setDate(d.getDate() + 7);
+      nextDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    } catch {
+      nextDateStr = todayStr;
+    }
+
+    setNewEventName(event.eventName || '');
+    setNewEventDate(nextDateStr);
+    if (event.time) {
+      const parts = event.time.split(':');
+      if (parts.length >= 2) {
+        let h = parseInt(parts[0], 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        if (h === 0) h = 12;
+        if (h > 12) h -= 12;
+        setNewEventHour(String(h).padStart(2, '0'));
+        setNewEventMinute(parts[1].slice(0, 2));
+        setNewEventAmPm(ampm);
+      }
+    }
+    setNewEventLocation(event.locationAddress || 'Rose of Sharon Main Sanctuary');
+    setNewEventGmapLink(event.gmapLink || '');
+    setNewEventCost(event.travelCost || '0');
+    setNewEventOrganizerPhone(event.organizerPhone || '');
+    setIsEventModalOpen(true);
+  };
+
   // Memoized user search & category filtering
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
@@ -1269,7 +1396,100 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div className={styles.profileArea}>
+        <div className={styles.profileArea} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Command Palette Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            title="Spotlight Search (Ctrl+K / ⌘K)"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.16)',
+              borderRadius: '20px',
+              padding: '6px 12px',
+              color: '#d4d4d8',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>⌘</span>
+            <span>Search</span>
+            <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.12)', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace' }}>Ctrl+K</span>
+          </button>
+
+          {/* Quick Live Scanner Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsLiveScannerOpen(true)}
+            title="Open Live QR Pass Scanner"
+            style={{
+              background: 'linear-gradient(135deg, #dc143c, #900d28)',
+              border: '1px solid rgba(255, 77, 109, 0.4)',
+              borderRadius: '20px',
+              padding: '6px 14px',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(220, 20, 60, 0.35)'
+            }}
+          >
+            <span>⚡</span>
+            <span>Live Scanner</span>
+          </button>
+
+          {/* Analytics Hub Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsAnalyticsModalOpen(true)}
+            title="Attendance Trends & Pastoral Care"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.16)',
+              borderRadius: '20px',
+              padding: '6px 12px',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>📊</span>
+            <span>Analytics</span>
+          </button>
+
+          {/* Choir & Worship Hub Trigger */}
+          <Link
+            href="/choir"
+            title="Worship Team & Choir Suite"
+            style={{
+              background: 'rgba(168, 85, 247, 0.2)',
+              border: '1px solid rgba(168, 85, 247, 0.45)',
+              borderRadius: '20px',
+              padding: '6px 12px',
+              color: '#d8b4fe',
+              fontSize: '12px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>🎶</span>
+            <span>Choir Hub</span>
+          </Link>
+
           <div 
             className={styles.profileCircle} 
             onClick={() => setIsProfileOpen(o => !o)}
@@ -1881,8 +2101,17 @@ export default function AdminDashboard() {
                   <p style={{ margin: '0.25rem 0 0', color: '#888', fontSize: '0.85rem' }}>
                     📍 {event.locationAddress}
                   </p>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                     <button className={styles.btnEdit} onClick={(e) => { e.stopPropagation(); handleOpenEditEvent(event); }}>Edit</button>
+                    <button
+                      type="button"
+                      className={styles.btnAddUser}
+                      style={{ padding: '4px 10px', fontSize: '11px', background: 'rgba(56, 189, 248, 0.18)', border: '1px solid rgba(56, 189, 248, 0.45)', color: '#38bdf8' }}
+                      onClick={(e) => { e.stopPropagation(); handleDuplicateNextWeek(event); }}
+                      title="Duplicate this gathering for next week (+7 days)"
+                    >
+                      ⏩ +7 Days
+                    </button>
                     <button className={styles.btnDelete} onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event._id); }}>Delete</button>
                   </div>
                 </div>
@@ -1911,6 +2140,40 @@ export default function AdminDashboard() {
                     >
                       ✕
                     </button>
+                  </div>
+
+                  {/* 1-Click Smart Event Presets */}
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#ff4d6d', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
+                      ⚡ 1-Click Service Presets
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {[
+                        { key: 'sunday_morning', label: '🌅 Sunday Morning (9:30 AM)' },
+                        { key: 'sunday_evening', label: '✝️ Sunday Evening (6:30 PM)' },
+                        { key: 'friday_fasting', label: '🔥 Friday Fasting (10:30 AM)' },
+                        { key: 'youth', label: '⚡ Youth Fellowship (6:00 PM)' },
+                        { key: 'cottage', label: '🏡 Cottage Prayer (7:30 PM)' }
+                      ].map(p => (
+                        <button
+                          key={p.key}
+                          type="button"
+                          onClick={() => applyEventPreset(p.key)}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.06)',
+                            border: '1px solid rgba(255, 255, 255, 0.14)',
+                            color: '#e4e4e7',
+                            padding: '5px 10px',
+                            borderRadius: '10px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {eventModalError && <div className={styles.errorMsg} style={{ marginBottom: '1rem', color: '#ff4d6d' }}>{eventModalError}</div>}
@@ -2056,6 +2319,38 @@ export default function AdminDashboard() {
             
             <div className={`${styles.sectionHeader} ${styles.pageHeader}`}>
               <h2 className={styles.sectionTitle}>Attendance Dashboard</h2>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className={styles.btnAddUser}
+                  onClick={() => setIsLiveScannerOpen(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #dc143c, #900d28)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 14px rgba(220, 20, 60, 0.4)'
+                  }}
+                >
+                  <span>⚡</span> Rapid QR Scanner
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnImport}
+                  onClick={() => setIsAnalyticsModalOpen(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>📊</span> Analytics & Trends
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnImport}
+                  onClick={() => setIsBroadcastModalOpen(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>💬</span> WhatsApp Broadcast
+                </button>
+              </div>
             </div>
 
             <div className={styles.usersLayout}>
@@ -3155,6 +3450,43 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* HIGH-TECH LIVE CAMERA & RAPID PASS SCANNER MODAL */}
+      <LiveScannerModal
+        isOpen={isLiveScannerOpen}
+        onClose={() => setIsLiveScannerOpen(false)}
+        selectedEvent={attendanceSelectedEvent || events[0]}
+        attendances={attendanceEventDetails?.attendances || []}
+        allUsers={users}
+        onCheckIn={handleScannerCheckIn}
+      />
+
+      {/* SPOTLIGHT COMMAND PALETTE (Ctrl+K / Cmd+K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNavigateTab={(tab) => setActiveTab(tab)}
+        onOpenScanner={() => setIsLiveScannerOpen(true)}
+        onOpenAddMember={() => { setActiveTab('addUser'); setIsModalOpen(true); }}
+        onOpenCreateEvent={() => { setActiveTab('createEvent'); setIsEventModalOpen(true); }}
+        onOpenImport={() => { setActiveTab('addUser'); setIsImportModalOpen(true); }}
+        onOpenBroadcast={() => setIsBroadcastModalOpen(true)}
+        onExportExcel={() => setIsAnalyticsModalOpen(true)}
+        users={users}
+        events={events}
+        onSelectUser={handleSelectUser}
+        onSelectEvent={handleSelectAttendanceEvent}
+      />
+
+      {/* ATTENDANCE INTELLIGENCE & ENGAGEMENT HUB MODAL */}
+      <AttendanceAnalyticsModal
+        isOpen={isAnalyticsModalOpen}
+        onClose={() => setIsAnalyticsModalOpen(false)}
+        events={events}
+        users={users}
+        currentEventAttendances={attendanceEventDetails?.attendances || []}
+        selectedEvent={attendanceSelectedEvent || events[0]}
+      />
     </div>
   );
 }

@@ -1,0 +1,490 @@
+.container {
+  min-height: 100vh;
+  background-color: #07070a;
+  color: #f1f5f9;
+  font-family: var(--font-inter), sans-serif;
+  position: relative;
+  isolation: isolate;
+  padding-bottom: 5rem;
+}
+
+/* 3D Background with Subtle Audio Waves */
+.bgScene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(220, 20, 60, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(139, 92, 246, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #09090e 0%, #050508 100%);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(14, 14, 20, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dc143c, #900d28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 14px rgba(220, 20, 60, 0.4);
+}
+
+.logoTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.logoSub {
+  font-size: 0.75rem;
+  color: #fb7185;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.mainContent {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Hero Banner */
+.heroBanner {
+  background: linear-gradient(135deg, rgba(220, 20, 60, 0.15) 0%, rgba(30, 27, 75, 0.4) 100%);
+  border: 1px solid rgba(220, 20, 60, 0.35);
+  border-radius: 24px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0 0 0.5rem 0;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.heroDesc {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  max-width: 580px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Tool Tabs (Pitch Pipe / Metronome / Setlist / Vocal Tips) */
+.toolTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.tabBtnActive {
+  background: linear-gradient(135deg, #dc143c, #900d28);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(220, 20, 60, 0.35);
+}
+
+/* Section Cards */
+.card {
+  background: rgba(18, 18, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 24px;
+  padding: 1.75rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Pitch Pipe Matrix */
+.pitchGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .pitchGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.pitchBtn {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pitchBtn:hover {
+  background: rgba(220, 20, 60, 0.15);
+  border-color: rgba(220, 20, 60, 0.4);
+  transform: translateY(-2px);
+}
+
+.pitchBtnPlaying {
+  background: linear-gradient(135deg, #dc143c, #ff4d6d) !important;
+  border-color: #ff4d6d !important;
+  color: #fff !important;
+  box-shadow: 0 0 25px rgba(220, 20, 60, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: scale(0.96);
+}
+
+.pitchFreq {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 600;
+  font-family: monospace;
+  margin-top: 4px;
+}
+
+.pitchBtnPlaying .pitchFreq {
+  color: #ffe4e6;
+}
+
+/* Metronome UI */
+.metronomeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  padding: 1rem 0;
+}
+
+.pulseRing {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.2) 0%, transparent 70%);
+  border: 3px solid rgba(220, 20, 60, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease, border-color 0.08s ease;
+  box-shadow: 0 0 25px rgba(220, 20, 60, 0.15);
+}
+
+.pulseRingActive {
+  transform: scale(1.1);
+  border-color: #ff4d6d;
+  background: radial-gradient(circle, rgba(220, 20, 60, 0.45) 0%, transparent 70%);
+  box-shadow: 0 0 40px rgba(220, 20, 60, 0.5);
+}
+
+.bpmDisplay {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.bpmLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fb7185;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.beatDots {
+  display: flex;
+  gap: 12px;
+}
+
+.beatDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  transition: all 0.08s ease;
+}
+
+.beatDotActive {
+  background: #ff4d6d;
+  box-shadow: 0 0 12px #ff4d6d;
+  transform: scale(1.3);
+}
+
+.beatDotAccent {
+  background: #fbbf24 !important;
+  box-shadow: 0 0 16px #fbbf24 !important;
+  transform: scale(1.4) !important;
+}
+
+.sliderRow {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bpmSlider {
+  flex: 1;
+  accent-color: #dc143c;
+  cursor: pointer;
+  height: 6px;
+}
+
+.metronomeBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playToggleBtn {
+  background: linear-gradient(135deg, #dc143c, #900d28);
+  border: none;
+  color: #fff;
+  padding: 12px 36px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(220, 20, 60, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s ease;
+}
+
+.playToggleBtn:hover {
+  transform: scale(1.02);
+}
+
+/* Songbook Grid */
+.songGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.songCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.songCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(220, 20, 60, 0.35);
+  transform: translateY(-2px);
+}
+
+.songCardTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 4px 0;
+}
+
+.songCardTamil {
+  font-size: 0.95rem;
+  color: #fb7185;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.songMetaRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.metaBadge {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.keyBadge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+.tempoBadge {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #facc15;
+}
+
+.categoryBadge {
+  background: rgba(220, 20, 60, 0.15);
+  border: 1px solid rgba(220, 20, 60, 0.35);
+  color: #ff4d6d;
+}
+
+/* Lyrics Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 10, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modalContent {
+  background: linear-gradient(145deg, #181824 0%, #0d0d16 100%);
+  border: 1px solid rgba(220, 20, 60, 0.35);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.85);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}

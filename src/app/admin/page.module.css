@@ -721,7 +721,7 @@
   }
 
   .container {
-    padding-bottom: 70px; /* Offset space for fixed bottom navbar */
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); /* Offset space for fixed bottom navbar with safe-area */
   }
 
   .bottomNav {

@@ -9,6 +9,10 @@ export default function PWAInstallPrompt() {
     if (typeof window === 'undefined') return false;
     return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   });
+  const [isAndroid, setIsAndroid] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return /android/i.test(window.navigator.userAgent);
+  });
   const [isStandalone, setIsStandalone] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
@@ -73,12 +77,16 @@ export default function PWAInstallPrompt() {
           <div className="pwa-banner-content">
             <div className="pwa-icon">⛪</div>
             <div className="pwa-text">
-              <div className="pwa-title">Install DA-ROS App</div>
-              <div className="pwa-sub">Add to home screen for faster access & offline updates!</div>
+              <div className="pwa-title">
+                {isAndroid ? 'Install Rose of Sharon IPC App' : 'Install Church App'}
+              </div>
+              <div className="pwa-sub">
+                {isAndroid ? '⚡ Offline entry passes, choir lyrics & faster access!' : 'Add to home screen for faster access & offline passes!'}
+              </div>
             </div>
             <div className="pwa-actions">
               <button onClick={handleInstallClick} className="pwa-install-btn">
-                Install Now
+                {isAndroid ? 'Install' : 'Add App'}
               </button>
               <button onClick={() => setShowBanner(false)} className="pwa-close-btn" aria-label="Close">
                 ✕
@@ -123,20 +131,29 @@ export default function PWAInstallPrompt() {
       <style jsx global>{`
         .pwa-banner {
           position: fixed;
-          bottom: 20px;
+          bottom: calc(76px + env(safe-area-inset-bottom, 0px));
           left: 50%;
           transform: translateX(-50%);
           z-index: 9999;
-          width: calc(100% - 32px);
+          width: calc(100% - 24px);
           max-width: 480px;
-          background: rgba(18, 18, 22, 0.94);
-          backdrop-filter: blur(20px) saturate(180%);
-          -webkit-backdrop-filter: blur(20px) saturate(180%);
-          border: 1px solid rgba(220, 20, 60, 0.35);
-          border-radius: 16px;
+          background: rgba(18, 18, 22, 0.96);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border: 1px solid rgba(220, 20, 60, 0.4);
+          border-radius: 18px;
           padding: 14px 16px;
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(220, 20, 60, 0.2);
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(220, 20, 60, 0.25);
           animation: slideUpPwa 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (min-width: 769px) {
+          .pwa-banner {
+            bottom: 24px;
+            right: 24px;
+            left: auto;
+            transform: none;
+          }
         }
 
         @keyframes slideUpPwa {

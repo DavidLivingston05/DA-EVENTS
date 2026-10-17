@@ -8,6 +8,8 @@ import { formatTimeWithAmPm } from '@/lib/formatTime';
 import { generateGoogleCalendarUrl } from '@/lib/calendarExport';
 import { translations, Language, Theme } from '@/lib/translations';
 import QRCodePass from '@/components/QRCodePass';
+import confetti from 'canvas-confetti';
+import { playAudioFeedback } from '@/lib/soundEffects';
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -156,6 +158,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     setTotalHeadcount(prev => isRegistered ? prev : prev + partyNum);
     setShowSuccessModal(true);
 
+    playAudioFeedback('streak');
+    try {
+      confetti({
+        particleCount: 90,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#dc143c', '#ff4d6d', '#ffd700', '#38bdf8', '#34d399']
+      });
+    } catch (e) {}
+
     setIsRegistering(true);
     try {
       const res = await fetch(`/api/admin/events/${id}`, {
@@ -185,7 +197,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const getEventShareText = () => {
     if (!event) return '';
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-    return `⛪ Join us for *${event.eventName}*!\n\n📅 *Date:* ${formatDate(event.date)}\n⏰ *Time:* ${formatTimeWithAmPm(event.time)}\n📍 *Location:* ${event.locationAddress}${event.gmapLink ? `\n🗺️ *Map:* ${event.gmapLink}` : ''}\n\n👉 *Click link to register & confirm attendance:*\n${shareUrl}`;
+    const inviterName = currentUser?.name ? `${currentUser.name}` : 'A member';
+    return `⛪ *${inviterName} invites you to join us for ${event.eventName}!* ✨\n\n📅 *Date:* ${formatDate(event.date)}\n⏰ *Time:* ${formatTimeWithAmPm(event.time)}\n📍 *Location:* ${event.locationAddress}${event.gmapLink ? `\n🗺️ *Map:* ${event.gmapLink}` : ''}\n\n"Come and worship with us! Everyone is warmly welcome." 🙏\n\n👉 *Click link to confirm your attendance:*\n${shareUrl}`;
   };
 
   const handleWhatsAppShare = () => {

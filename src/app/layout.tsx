@@ -17,11 +17,15 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Rose of Sharon IPC Church | Event & Prayer Registration",
   description: "Register for upcoming Prayer Meetings, Sunday Worship Services, Youth Fellowships, and Special Gatherings at Rose of Sharon IPC Church.",
+  applicationName: "ROS Church",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Rose of Sharon IPC Church",
+  },
+  formatDetection: {
+    telephone: true,
   },
   icons: {
     icon: "/icons/icon-192x192.png",
@@ -30,11 +34,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#dc143c",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#080808" },
+    { media: "(prefers-color-scheme: light)", color: "#dc143c" },
+  ],
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({

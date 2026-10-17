@@ -8,6 +8,7 @@ import { useScrollReveal, use3DTilt } from '@/hooks/useScrollReveal';
 import { formatTimeWithAmPm, isEventUpcoming } from '@/lib/formatTime';
 import { generateGoogleCalendarUrl } from '@/lib/calendarExport';
 import { translations, Language, Theme } from '@/lib/translations';
+import { getTodayVerse, calculateAttendanceStreak } from '@/lib/faithEngagement';
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState<'all' | 'registered' | 'schedule'>('all');
@@ -20,6 +21,7 @@ export default function UserDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [rsvpLoadingId, setRsvpLoadingId] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<string>('');
 
   const [theme, setTheme] = useState<Theme>('dark');
   const [lang, setLang] = useState<Language>('en');
@@ -254,6 +256,50 @@ export default function UserDashboard() {
     }
   };
 
+  // Next upcoming gathering and countdown calculation
+  const nextUpcomingEvent = useMemo(() => {
+    const now = new Date().getTime();
+    return events.find((e: any) => {
+      if (!e.date) return false;
+      const t = new Date(`${e.date}T${e.time || '09:00:00'}`).getTime();
+      return t > now;
+    }) || null;
+  }, [events]);
+
+  useEffect(() => {
+    if (!nextUpcomingEvent) {
+      setCountdown('');
+      return;
+    }
+    const updateCountdown = () => {
+      const target = new Date(`${nextUpcomingEvent.date}T${nextUpcomingEvent.time || '09:00:00'}`).getTime();
+      const diff = target - Date.now();
+      if (diff <= 0) {
+        setCountdown(lang === 'ta' ? 'இப்போதே துவங்குகிறது!' : 'Starting Now!');
+        return;
+      }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diff / (1000 * 60)) % 60);
+      setCountdown(`${d > 0 ? `${d}d ` : ''}${h}h ${m}m`);
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [nextUpcomingEvent, lang]);
+
+  const streakInfo = useMemo(() => {
+    return calculateAttendanceStreak(registeredEvents);
+  }, [registeredEvents]);
+
+  const todayVerse = useMemo(() => getTodayVerse(), []);
+
+  const handleShareVerse = () => {
+    const v = todayVerse[lang];
+    const text = `📖 *Verse of the Day*\n"${v.text}" — ${v.reference}\n\nHave a blessed day in Christ! 🙏 — Rose of Sharon IPC Church`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
   return (
     <div className={`${styles.container} ${theme === 'light' ? styles.containerLight : ''}`}>
       {/* Sleek Top Navigation Bar */}
@@ -283,6 +329,13 @@ export default function UserDashboard() {
           >
             ⛪ {t.weeklySchedule}
           </button>
+          <Link
+            href="/choir"
+            className={styles.tab}
+            style={{ textDecoration: 'none' }}
+          >
+            🎶 {lang === 'ta' ? 'பாடகர் குழு' : 'Choir Hub'}
+          </Link>
         </div>
 
         {/* Right Controls */}
@@ -363,6 +416,16 @@ export default function UserDashboard() {
                       {t.myRegistrations} {upcomingRegisteredEvents.length > 0 && `(${upcomingRegisteredEvents.length})`}
                     </button>
 
+                    <Link
+                      href="/choir"
+                      className={styles.profileDropdownItem}
+                      style={{ textDecoration: 'none', color: '#c084fc', fontWeight: 700 }}
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <span style={{ fontSize: '15px' }}>🎶</span>
+                      {lang === 'ta' ? 'பாடகர் குழு & ஆராதனை' : 'Choir & Worship Hub'}
+                    </Link>
+
                     <button 
                       className={`${styles.profileDropdownItem} ${styles.profileDropdownLogout}`}
                       onClick={handleLogout}
@@ -414,13 +477,166 @@ export default function UserDashboard() {
       <main className={styles.mainContent} style={{ paddingTop: upcomingRegisteredEvent ? '1rem' : '84px' }}>
         {/* Welcome Header */}
         <div className={styles.heroHeader}>
-          <h1 className={styles.greetingTitle}>
-            {lang === 'ta' ? 'வணக்கம், ' : 'Welcome, '} 
-            <span className={styles.highlightName}>{currentUser?.name || (lang === 'ta' ? 'அன்பரே' : 'Friend')}</span> 🙏
-          </h1>
-          <p className={styles.greetingSub}>
-            {lang === 'ta' ? 'சபையின் வரவிருக்கும் ஆராதனைகள் & ஜெபக் கூட்டங்கள்' : 'Upcoming worship services, prayer meetings & fellowship gatherings'}
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h1 className={styles.greetingTitle}>
+                {lang === 'ta' ? 'வணக்கம், ' : 'Welcome, '} 
+                <span className={styles.highlightName}>{currentUser?.name || (lang === 'ta' ? 'அன்பரே' : 'Friend')}</span> 🙏
+              </h1>
+              <p className={styles.greetingSub}>
+                {lang === 'ta' ? 'சபையின் வரவிருக்கும் ஆராதனைகள் & ஜெபக் கூட்டங்கள்' : 'Upcoming worship services, prayer meetings & fellowship gatherings'}
+              </p>
+            </div>
+
+            {/* Attendance Streak Badge */}
+            {streakInfo.streakCount > 0 && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(135deg, rgba(220, 20, 60, 0.18), rgba(255, 77, 109, 0.12))',
+                border: '1px solid rgba(220, 20, 60, 0.35)',
+                padding: '8px 14px',
+                borderRadius: '16px',
+                color: '#fff',
+                fontSize: '12px',
+                fontWeight: 700
+              }}>
+                <span style={{ fontSize: '18px' }}>{streakInfo.badgeEmoji}</span>
+                <div>
+                  <div style={{ color: '#ff4d6d', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.06em' }}>
+                    {streakInfo.badgeTitle}
+                  </div>
+                  <div>{streakInfo.streakCount} Gatherings RSVPed</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Next Gathering Countdown Pill */}
+          {nextUpcomingEvent && countdown && (
+            <div style={{
+              marginTop: '12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '20px',
+              padding: '6px 16px',
+              fontSize: '12px',
+              color: '#d4d4d8'
+            }}>
+              <span style={{ color: '#38bdf8' }}>⏳</span>
+              <span><strong>Next Gathering ({nextUpcomingEvent.eventName}):</strong> In {countdown}</span>
+            </div>
+          )}
+
+          {/* Daily Scripture Inspiration Card */}
+          <div style={{
+            marginTop: '16px',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(20, 20, 28, 0.7) 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '18px',
+            padding: '16px 20px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <span>✨</span> {lang === 'ta' ? 'இன்றைய வேத வசனம்' : 'Verse of the Day'}
+              </div>
+              <button
+                type="button"
+                onClick={handleShareVerse}
+                style={{
+                  background: 'rgba(37, 211, 102, 0.15)',
+                  border: '1px solid rgba(37, 211, 102, 0.35)',
+                  color: '#25D366',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '4px 10px',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span>💬</span> {lang === 'ta' ? 'பகிர்' : 'Share'}
+              </button>
+            </div>
+            <div style={{ fontSize: '14px', fontStyle: 'italic', color: '#f3f4f6', lineHeight: 1.5 }}>
+              "{todayVerse[lang].text}"
+            </div>
+            <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 700, marginTop: '6px', textAlign: 'right' }}>
+              — {todayVerse[lang].reference}
+            </div>
+          </div>
+
+          {/* DaSong Studio Quick Lyrics Access Banner */}
+          <div style={{
+            marginTop: '12px',
+            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.16) 0%, rgba(30, 27, 75, 0.4) 100%)',
+            border: '1px solid rgba(168, 85, 247, 0.35)',
+            borderRadius: '16px',
+            padding: '12px 18px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '22px' }}>🎵</span>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>
+                  {lang === 'ta' ? 'பாடல்கள் & வரிகள் (DaSong Studio)' : 'Choir Lyrics & Chords (DaSong Studio)'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#c4b5fd', marginTop: '1px' }}>
+                  {lang === 'ta' ? 'ஆராதனை பாடல்கள், வரிகள் & கார்ட்ஸ்' : 'Teleprompter, chord charts & lyrics library'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link
+                href="/choir"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#fff',
+                  padding: '6px 12px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textDecoration: 'none'
+                }}
+              >
+                🎶 Choir Suite
+              </Link>
+              <a
+                href="https://dasong.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+                  color: '#fff',
+                  padding: '6px 14px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.35)'
+                }}
+              >
+                <span>⚡</span> Open DaSong ↗
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Search & Category Filter Bar */}
@@ -768,6 +984,14 @@ export default function UserDashboard() {
           <span className={styles.bottomNavIcon}>⛪</span>
           <span>Schedule</span>
         </button>
+        <Link
+          href="/choir"
+          className={styles.bottomNavItem}
+          style={{ textDecoration: 'none' }}
+        >
+          <span className={styles.bottomNavIcon}>🎶</span>
+          <span>Choir</span>
+        </Link>
       </nav>
     </div>
   );

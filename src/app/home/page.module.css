@@ -1028,7 +1028,7 @@
     justify-content: center;
   }
   .mainContent {
-    padding: 1rem 1rem 90px;
+    padding: 1rem 1rem calc(96px + env(safe-area-inset-bottom, 0px));
   }
   .featuredCard {
     flex-direction: column;
@@ -1069,7 +1069,7 @@
   .bottomNav {
     display: flex;
     position: fixed;
-    bottom: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     left: 16px;
     right: 16px;
     max-width: 480px;
