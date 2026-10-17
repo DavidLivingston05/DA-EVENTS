@@ -1396,95 +1396,45 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div className={styles.profileArea} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Command Palette Trigger */}
-          <button
-            type="button"
-            onClick={() => setIsCommandPaletteOpen(true)}
-            title="Spotlight Search (Ctrl+K / ⌘K)"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.16)',
-              borderRadius: '20px',
-              padding: '6px 12px',
-              color: '#d4d4d8',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <span>⌘</span>
-            <span>Search</span>
-            <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.12)', padding: '1px 5px', borderRadius: '4px', fontFamily: 'monospace' }}>Ctrl+K</span>
-          </button>
-
+        <div className={styles.profileArea}>
           {/* Quick Live Scanner Trigger */}
           <button
             type="button"
             onClick={() => setIsLiveScannerOpen(true)}
             title="Open Live QR Pass Scanner"
-            style={{
-              background: 'linear-gradient(135deg, #dc143c, #900d28)',
-              border: '1px solid rgba(255, 77, 109, 0.4)',
-              borderRadius: '20px',
-              padding: '6px 14px',
-              color: '#fff',
-              fontSize: '12px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(220, 20, 60, 0.35)'
-            }}
+            className={styles.headerScannerBtn}
           >
             <span>⚡</span>
-            <span>Live Scanner</span>
+            <span className={styles.btnText}>Live Scanner</span>
           </button>
 
-          {/* Analytics Hub Trigger */}
+          {/* Command Palette Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            title="Spotlight Search (Ctrl+K / ⌘K)"
+            className={styles.headerSearchBtn}
+          >
+            <span>🔍</span>
+            <span className={styles.btnText}>Search</span>
+          </button>
+
+          {/* Analytics Hub Trigger (Desktop) */}
           <button
             type="button"
             onClick={() => setIsAnalyticsModalOpen(true)}
             title="Attendance Trends & Pastoral Care"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.16)',
-              borderRadius: '20px',
-              padding: '6px 12px',
-              color: '#fff',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
+            className={styles.desktopOnlyBtn}
           >
             <span>📊</span>
             <span>Analytics</span>
           </button>
 
-          {/* Choir & Worship Hub Trigger */}
+          {/* Choir & Worship Hub Trigger (Desktop) */}
           <Link
             href="/choir"
             title="Worship Team & Choir Suite"
-            style={{
-              background: 'rgba(168, 85, 247, 0.2)',
-              border: '1px solid rgba(168, 85, 247, 0.45)',
-              borderRadius: '20px',
-              padding: '6px 12px',
-              color: '#d8b4fe',
-              fontSize: '12px',
-              fontWeight: 700,
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
+            className={styles.desktopOnlyBtn}
           >
             <span>🎶</span>
             <span>Choir Hub</span>
@@ -1508,10 +1458,46 @@ export default function AdminDashboard() {
                 <div className={styles.profileDropdownHeader}>
                   <div className={styles.profileDropdownAvatar}>A</div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Admin</div>
+                    <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#fff' }}>Admin</div>
                     <div style={{ color: '#888', fontSize: '0.8rem' }}>DA-ROS Admin Panel</div>
                   </div>
                 </div>
+
+                <div className={styles.profileDropdownDivider} />
+
+                {/* Mobile Quick Actions in Menu */}
+                <button
+                  type="button"
+                  className={styles.profileDropdownItem}
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    setIsAnalyticsModalOpen(true);
+                  }}
+                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: '#38bdf8' }}
+                >
+                  <span style={{ fontSize: '15px' }}>📊</span>
+                  Attendance Analytics
+                </button>
+
+                <Link
+                  href="/choir"
+                  className={styles.profileDropdownItem}
+                  onClick={() => setIsProfileOpen(false)}
+                  style={{ textDecoration: 'none', color: '#c084fc' }}
+                >
+                  <span style={{ fontSize: '15px' }}>🎶</span>
+                  Choir & Worship Hub
+                </Link>
+
+                <Link
+                  href="/home"
+                  className={styles.profileDropdownItem}
+                  onClick={() => setIsProfileOpen(false)}
+                  style={{ textDecoration: 'none', color: '#34d399' }}
+                >
+                  <span style={{ fontSize: '15px' }}>🏠</span>
+                  Switch to Member View
+                </Link>
 
                 <div className={styles.profileDropdownDivider} />
 
@@ -1519,7 +1505,7 @@ export default function AdminDashboard() {
                   type="button"
                   className={styles.profileDropdownItem}
                   onClick={handleAdminLogout}
-                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: '#fb7185' }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -1538,80 +1524,50 @@ export default function AdminDashboard() {
       <main className={styles.mainContent}>
         
         {/* EXECUTIVE ADMINISTRATION KPI DASHBOARD BAR */}
-        <div style={{
-          width: '100%',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
+        <div className={styles.kpiGrid}>
+          <div className={styles.kpiCard} style={{
             background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
-            border: '1px solid rgba(225, 29, 72, 0.3)',
-            borderRadius: '18px',
-            padding: '18px 22px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+            border: '1px solid rgba(225, 29, 72, 0.3)'
           }}>
-            <div style={{ fontSize: '32px' }}>👥</div>
+            <div className={styles.kpiIcon}>👥</div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{users.length}</div>
-              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Total Members</div>
+              <div className={styles.kpiNumber}>{users.length}</div>
+              <div className={styles.kpiLabel}>Total Members</div>
             </div>
           </div>
 
-          <div style={{
+          <div className={styles.kpiCard} style={{
             background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            borderRadius: '18px',
-            padding: '18px 22px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+            border: '1px solid rgba(59, 130, 246, 0.3)'
           }}>
-            <div style={{ fontSize: '32px' }}>🗓️</div>
+            <div className={styles.kpiIcon}>🗓️</div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{activeEvents.length}</div>
-              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Upcoming Gatherings</div>
+              <div className={styles.kpiNumber}>{activeEvents.length}</div>
+              <div className={styles.kpiLabel}>Upcoming Events</div>
             </div>
           </div>
 
-          <div style={{
+          <div className={styles.kpiCard} style={{
             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '18px',
-            padding: '18px 22px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+            border: '1px solid rgba(16, 185, 129, 0.3)'
           }}>
-            <div style={{ fontSize: '32px' }}>🎟️</div>
+            <div className={styles.kpiIcon}>🎟️</div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
+              <div className={styles.kpiNumber}>
                 {events.reduce((sum, ev) => sum + (ev.registeredUsers?.length || 0), 0)}
               </div>
-              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Total Member RSVPs</div>
+              <div className={styles.kpiLabel}>Total RSVPs</div>
             </div>
           </div>
 
-          <div style={{
+          <div className={styles.kpiCard} style={{
             background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.14) 0%, rgba(20, 20, 26, 0.8) 100%)',
-            border: '1px solid rgba(168, 85, 247, 0.3)',
-            borderRadius: '18px',
-            padding: '18px 22px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+            border: '1px solid rgba(168, 85, 247, 0.3)'
           }}>
-            <div style={{ fontSize: '32px' }}>🏷️</div>
+            <div className={styles.kpiIcon}>🏷️</div>
             <div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{categories.length || 1}</div>
-              <div style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 600 }}>Active Ministries</div>
+              <div className={styles.kpiNumber}>{categories.length || 1}</div>
+              <div className={styles.kpiLabel}>Ministries</div>
             </div>
           </div>
         </div>

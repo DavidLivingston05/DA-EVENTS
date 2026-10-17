@@ -146,11 +146,18 @@
 .toolTabs {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   background: rgba(255, 255, 255, 0.03);
   padding: 6px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.toolTabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tabBtn {
@@ -165,6 +172,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 

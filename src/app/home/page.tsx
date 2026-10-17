@@ -477,72 +477,37 @@ export default function UserDashboard() {
       <main className={styles.mainContent} style={{ paddingTop: upcomingRegisteredEvent ? '1rem' : '84px' }}>
         {/* Welcome Header */}
         <div className={styles.heroHeader}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+          <div className={styles.greetingRow}>
             <div>
               <h1 className={styles.greetingTitle}>
                 {lang === 'ta' ? 'வணக்கம், ' : 'Welcome, '} 
                 <span className={styles.highlightName}>{currentUser?.name || (lang === 'ta' ? 'அன்பரே' : 'Friend')}</span> 🙏
               </h1>
               <p className={styles.greetingSub}>
-                {lang === 'ta' ? 'சபையின் வரவிருக்கும் ஆராதனைகள் & ஜெபக் கூட்டங்கள்' : 'Upcoming worship services, prayer meetings & fellowship gatherings'}
+                {lang === 'ta' ? 'சபையின் வரவிருக்கும் ஆராதனைகள் & ஜெபக் கூட்டங்கள்' : 'Upcoming worship services & prayer meetings'}
               </p>
             </div>
 
             {/* Attendance Streak Badge */}
             {streakInfo.streakCount > 0 && (
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'linear-gradient(135deg, rgba(220, 20, 60, 0.18), rgba(255, 77, 109, 0.12))',
-                border: '1px solid rgba(220, 20, 60, 0.35)',
-                padding: '8px 14px',
-                borderRadius: '16px',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: 700
-              }}>
-                <span style={{ fontSize: '18px' }}>{streakInfo.badgeEmoji}</span>
-                <div>
-                  <div style={{ color: '#ff4d6d', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.06em' }}>
-                    {streakInfo.badgeTitle}
-                  </div>
-                  <div>{streakInfo.streakCount} Gatherings RSVPed</div>
-                </div>
+              <div className={styles.streakPill} title={streakInfo.badgeTitle}>
+                <span>{streakInfo.badgeEmoji}</span>
+                <span>{streakInfo.streakCount} Gathering Streak</span>
               </div>
             )}
           </div>
 
           {/* Next Gathering Countdown Pill */}
           {nextUpcomingEvent && countdown && (
-            <div style={{
-              marginTop: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '20px',
-              padding: '6px 16px',
-              fontSize: '12px',
-              color: '#d4d4d8'
-            }}>
+            <div className={styles.countdownBar}>
               <span style={{ color: '#38bdf8' }}>⏳</span>
-              <span><strong>Next Gathering ({nextUpcomingEvent.eventName}):</strong> In {countdown}</span>
+              <span><strong>Next ({nextUpcomingEvent.eventName}):</strong> In {countdown}</span>
             </div>
           )}
 
           {/* Daily Scripture Inspiration Card */}
-          <div style={{
-            marginTop: '16px',
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(20, 20, 28, 0.7) 100%)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '18px',
-            padding: '16px 20px',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div className={styles.verseCard}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 <span>✨</span> {lang === 'ta' ? 'இன்றைய வேத வசனம்' : 'Verse of the Day'}
               </div>
@@ -555,8 +520,8 @@ export default function UserDashboard() {
                   color: '#25D366',
                   fontSize: '11px',
                   fontWeight: 700,
-                  padding: '4px 10px',
-                  borderRadius: '10px',
+                  padding: '3px 9px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -566,75 +531,11 @@ export default function UserDashboard() {
                 <span>💬</span> {lang === 'ta' ? 'பகிர்' : 'Share'}
               </button>
             </div>
-            <div style={{ fontSize: '14px', fontStyle: 'italic', color: '#f3f4f6', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '13.5px', fontStyle: 'italic', color: '#f3f4f6', lineHeight: 1.45 }}>
               "{todayVerse[lang].text}"
             </div>
-            <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 700, marginTop: '6px', textAlign: 'right' }}>
+            <div style={{ fontSize: '11.5px', color: '#9ca3af', fontWeight: 700, marginTop: '4px', textAlign: 'right' }}>
               — {todayVerse[lang].reference}
-            </div>
-          </div>
-
-          {/* DaSong Studio Quick Lyrics Access Banner */}
-          <div style={{
-            marginTop: '12px',
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.16) 0%, rgba(30, 27, 75, 0.4) 100%)',
-            border: '1px solid rgba(168, 85, 247, 0.35)',
-            borderRadius: '16px',
-            padding: '12px 18px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '10px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '22px' }}>🎵</span>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>
-                  {lang === 'ta' ? 'பாடல்கள் & வரிகள் (DaSong Studio)' : 'Choir Lyrics & Chords (DaSong Studio)'}
-                </div>
-                <div style={{ fontSize: '11px', color: '#c4b5fd', marginTop: '1px' }}>
-                  {lang === 'ta' ? 'ஆராதனை பாடல்கள், வரிகள் & கார்ட்ஸ்' : 'Teleprompter, chord charts & lyrics library'}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link
-                href="/choir"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  color: '#fff',
-                  padding: '6px 12px',
-                  borderRadius: '10px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textDecoration: 'none'
-                }}
-              >
-                🎶 Choir Suite
-              </Link>
-              <a
-                href="https://dasong.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                  color: '#fff',
-                  padding: '6px 14px',
-                  borderRadius: '10px',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.35)'
-                }}
-              >
-                <span>⚡</span> Open DaSong ↗
-              </a>
             </div>
           </div>
         </div>
