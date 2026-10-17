@@ -474,7 +474,7 @@ export default function UserDashboard() {
       )}
 
       {/* Main Content Area */}
-      <main className={styles.mainContent} style={{ paddingTop: upcomingRegisteredEvent ? '1rem' : '84px' }}>
+      <main className={styles.mainContent}>
         {/* Welcome Header */}
         <div className={styles.heroHeader}>
           <div className={styles.greetingRow}>

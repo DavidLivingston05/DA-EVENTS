@@ -15,7 +15,12 @@
   --sar: env(safe-area-inset-right, 0px);
 }
 
-html, body {
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
   margin: 0;
   padding: 0;
   background-color: var(--background);
@@ -23,59 +28,45 @@ html, body {
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic Viewport Height for Android Chrome navigation bar */
-  overscroll-behavior-y: contain; /* Prevents accidental pull-to-refresh on Android while scrolling */
+  min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
 }
 
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
 }
 
-/* Touch manipulation and instant tap response for buttons, links, and cards */
-button, 
-a, 
-input, 
-select, 
-textarea,
-[role="button"] {
-  touch-action: manipulation;
+/* ══════════════════════════════════════════════════════
+   SCROLL REVEAL & ANIMATION SYSTEM
+   (Safe fallback: if JS is disabled or delayed, elements remain visible)
+══════════════════════════════════════════════════════ */
+.reveal, .reveal-3d, .reveal-scale, .reveal-left, .reveal-right {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* On desktop with JS running, apply subtle reveal */
+@media (min-width: 769px) {
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .js .reveal.revealed, .js .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Active tap feedback for buttons and links */
+button, a, [role="button"] {
   -webkit-tap-highlight-color: transparent;
-}
-
-/* Active tap feedback for mobile touch devices */
-@media (pointer: coarse) {
-  button:active, 
-  a:active, 
-  [role="button"]:active {
-    opacity: 0.88;
-    transform: scale3d(0.98, 0.98, 1);
-    transition: transform 0.08s ease, opacity 0.08s ease;
-  }
-}
-
-/* GPU Hardware Acceleration & Smooth 120 FPS Scrolling for Mobile */
-button, input, select, textarea, .tilt-card, [class*="modalContent"], [class*="card"], [class*="eventCard"] {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* Lightweight mobile backdrop filters for 120 FPS lag-free scrolling */
-@media (max-width: 768px) {
-  nav, header, [class*="modalOverlay"], [class*="mobileSheet"] {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-  }
 }
 
 /* Hide scrollbars globally but keep smooth scrolling functionality */
@@ -84,6 +75,6 @@ button, input, select, textarea, .tilt-card, [class*="modalContent"], [class*="c
 }
 
 * {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

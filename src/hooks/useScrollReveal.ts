@@ -2,19 +2,31 @@ import { useEffect } from 'react';
 
 export function useScrollReveal() {
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Immediately reveal all elements on mobile devices
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+    const elements = document.querySelectorAll('.reveal, .reveal-3d, .reveal-left, .reveal-scale, .reveal-right');
+
+    if (isMobile) {
+      elements.forEach((el) => {
+        el.classList.add('revealed', 'visible');
+      });
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            observer.unobserve(entry.target); // Unobserve once revealed for performance
+            entry.target.classList.add('revealed', 'visible');
+            observer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.05 }
     );
 
-    const elements = document.querySelectorAll('.reveal, .reveal-3d, .reveal-left, .reveal-scale');
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();

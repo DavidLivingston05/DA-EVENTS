@@ -27,7 +27,10 @@ export default function PWAInstallPrompt() {
       e.preventDefault();
       setDeferredPrompt(e);
       setIsInstallable(true);
-      setShowBanner(true);
+      const hasDismissed = typeof window !== 'undefined' && localStorage.getItem('pwa_prompt_dismissed');
+      if (!hasDismissed) {
+        setShowBanner(true);
+      }
     };
 
     const handleAppInstalled = () => {
@@ -88,7 +91,12 @@ export default function PWAInstallPrompt() {
               <button onClick={handleInstallClick} className="pwa-install-btn">
                 {isAndroid ? 'Install' : 'Add App'}
               </button>
-              <button onClick={() => setShowBanner(false)} className="pwa-close-btn" aria-label="Close">
+              <button onClick={() => {
+                setShowBanner(false);
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('pwa_prompt_dismissed', 'true');
+                }
+              }} className="pwa-close-btn" aria-label="Close">
                 ✕
               </button>
             </div>
